@@ -1,4 +1,4 @@
-#include "include/GraphicsCore/Application.h"
+#include "GraphicsCore/Application.h"
 
 int main()
 {

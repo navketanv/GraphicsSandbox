@@ -1,6 +1,6 @@
 #define GL_SILENCE_DEPRECATION
-#include "Application.h"
-#include "../Constants.h"
+#include "GraphicsCore/Application.h"
+#include "Constants.h"
 #include <iostream>
 #include <cstdio>
 #include <SDL.h>
