@@ -2,23 +2,77 @@ cmake_minimum_required(VERSION 4.3.3)
 
 project(GraphicsSandbox LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-include(cmake/CompilerWarnings.cmake)
-add_executable(GraphicsSandbox src/GraphicsSandbox.cpp
-    include/GraphicsCore/Application.h src/Application.cpp
-    include/Constants.h
+# ==========================================================
+# Project Options
+# ==========================================================
+
+option(
+    ENABLE_ASAN
+    "Enable Address Sanitizer"
+    ON
 )
 
-include(GNUInstallDirs)
-install(TARGETS GraphicsSandbox
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+option(
+    ENABLE_UBSAN
+    "Enable Undefined Behaviour Sanitizer"
+    OFF
 )
+
+option(
+    ENABLE_WARNINGS_AS_ERRORS
+    "Treat Compiler Warnings As Errors"
+    OFF
+)
+
+# ==========================================================
+# Build Configuration
+# ==========================================================
+
+include(cmake/CompilerWarnings.cmake)
+include(cmake/CompilerOptions.cmake)
+include(cmake/Sanitizers.cmake)
+
+# ==========================================================
+# Dependencies
+# ==========================================================
 
 find_package(OpenGL REQUIRED)
 find_package(SDL2 REQUIRED)
 
-target_link_libraries(GraphicsSandbox PRIVATE SDL2::SDL2 OpenGL::GL)
+# ==========================================================
+# Target
+# ==========================================================
+
+add_executable(GraphicsSandbox
+    src/GraphicsSandbox.cpp
+    src/Application.cpp
+
+    include/GraphicsCore/Application.h
+    include/Constants.h
+)
+
+target_include_directories(GraphicsSandbox
+    PRIVATE
+        include
+)
+
+target_link_libraries(GraphicsSandbox
+    PRIVATE
+        SDL2::SDL2
+        OpenGL::GL
+)
+
+# ==========================================================
+# enable public interfaces
+# ==========================================================
+
 enable_warnings(GraphicsSandbox)
-target_include_directories(GraphicsSandbox PRIVATE include)
+enable_project_options(GraphicsSandbox)
+enable_sanitizers(GraphicsSandbox)
+
+include(GNUInstallDirs)
+
+install(TARGETS GraphicsSandbox
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
