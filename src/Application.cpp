@@ -1,47 +1,30 @@
 #define GL_SILENCE_DEPRECATION
 #include "GraphicsCore/Application.h"
-#include "Constants.h"
-#include <iostream>
-#include <cstdio>
+#include "GraphicsCore/Color.h"
+#include "utilities/Logger.h"
 #include <SDL.h>
 #include <OpenGL/gl.h>
 
-Application::Application() {
-    printLocation();
+namespace GraphicsCore
+{
+
+Application::Application()
+    : m_pSDLSystem{std::make_unique<SDLSystem>()}
+    , m_pWindow{std::make_unique<Window>()}
+{
+    util::Logger::location();
+    m_pContext = std::make_unique<GLContext>(*m_pWindow);
+    m_pRenderer = std::make_unique<Renderer>(*m_pWindow);
+    util::Logger::logInfo(channel, "Application Created");
 }
 
 Application::~Application() {
-    printLocation();
+    util::Logger::location();
+    util::Logger::logInfo(channel, "Application Destroyed");
 }
 
-void Application::run() {
-    printLocation();
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        std::cerr << SDL_GetError() << '\n';
-        return;
-    }
-
-    SDL_Window* pWindow = SDL_CreateWindow(Constants::gProjectName, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                            Constants::gWIDTH, Constants::gHEIGHT, SDL_WINDOW_OPENGL);
-    if (!pWindow) {
-        std::cerr << SDL_GetError() << '\n';
-        SDL_Quit();
-        return;
-    }
-
-    SDL_RaiseWindow(pWindow);
-    SDL_GLContext pContext = SDL_GL_CreateContext(pWindow);
-    if (!pContext) {
-        std::cerr << SDL_GetError() << '\n';
-        SDL_DestroyWindow(pWindow);
-        SDL_Quit();
-        return;
-    }
-
-    if (SDL_GL_SetSwapInterval(1) != 0) {
-        std::cerr << "VSync Unavailable: " << SDL_GetError() << '\n';
-    }
-
+int Application::run() {
+    util::Logger::logInfo(channel, "Application Run Started");
     while (m_bIsRunning) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -59,22 +42,14 @@ void Application::run() {
             }
         }
         if (!m_bIsRunning) {
+            util::Logger::logInfo(channel, "Application Run Stopped");
             break;
         }
-        glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        SDL_GL_SwapWindow(pWindow);
+        m_pRenderer->beginFrame();
+        m_pRenderer->setClearColor(Colors::Red);
+        m_pRenderer->endFrame();
     }
-    if (pContext) {
-        SDL_GL_DeleteContext(pContext);
-    }
-
-    if (pWindow) {
-        SDL_DestroyWindow(pWindow);
-    }
-    SDL_Quit();
+    return 0;
 }
 
-void Application::printLocation(const std::source_location& location) {
-    puts(location.function_name());
-}
+} // namespace GraphicsCore

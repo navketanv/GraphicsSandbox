@@ -45,10 +45,27 @@ find_package(SDL2 REQUIRED)
 
 add_executable(GraphicsSandbox
     src/GraphicsSandbox.cpp
+    src/Logger.cpp
     src/Application.cpp
+    src/SDLSystem.cpp
+    src/GLContext.cpp
+    src/GLContextAccess.cpp
+    src/Renderer.cpp
+    src/Window.cpp
+    src/WindowAccess.cpp
 
-    include/GraphicsCore/Application.h
     include/Constants.h
+    include/utilities/Logger.h
+    include/GraphicsCore/Application.h
+    include/GraphicsCore/SDLSystem.h
+    include/GraphicsCore/GLContext.h
+    include/GraphicsCore/detail/GLContextAccess.h
+    include/GraphicsCore/Window.h
+    include/GraphicsCore/detail/WindowAccess.h
+    include/GraphicsCore/Renderer.h
+    include/GraphicsCore/Color.h
+    include/utilities/BitwiseOperations.h
+    include/GraphicsCore/Enums.h
 )
 
 target_include_directories(GraphicsSandbox

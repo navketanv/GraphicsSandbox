@@ -2,7 +2,6 @@
 
 int main()
 {
-    Application app;
-    app.run();
-    return 0;
+    GraphicsCore::Application app;
+    return app.run();
 }
