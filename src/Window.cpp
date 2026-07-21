@@ -16,6 +16,11 @@ Window::Window()
     raise();
 }
 
+Window::~Window() {
+    util::Logger::location();
+    util::Logger::logInfo(channel, "SDL Window Destroyed");
+}
+
 void Window::raise() const noexcept {
     SDL_RaiseWindow(m_pWindow.get());
 }

@@ -13,7 +13,7 @@ class GLContext
 {
 public:
     GLContext(Window& window);
-    ~GLContext() = default;
+    ~GLContext();
 
     GLContext(const GLContext& rhs) = delete;
     GLContext& operator=(const GLContext& rhs) = delete;

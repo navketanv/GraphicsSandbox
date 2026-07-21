@@ -45,8 +45,9 @@ int Application::run() {
             util::Logger::logInfo(channel, "Application Run Stopped");
             break;
         }
-        m_pRenderer->beginFrame();
+
         m_pRenderer->setClearColor(Colors::Red);
+        m_pRenderer->beginFrame();
         m_pRenderer->endFrame();
     }
     return 0;

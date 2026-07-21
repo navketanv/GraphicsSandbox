@@ -10,7 +10,7 @@ class Window
 {
 public:
     Window();
-    ~Window() = default;
+    ~Window();
 
     Window(const Window& rhs) = delete;
     Window& operator=(const Window& rhs) = delete;

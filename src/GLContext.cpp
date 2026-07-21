@@ -17,6 +17,11 @@ GLContext::GLContext(Window& window)
     setSwapInterval(SwapInterval::eVSync);
 }
 
+GLContext::~GLContext() {
+    util::Logger::location();
+    util::Logger::logInfo(channel, "SDL GLContext Destroyed");
+}
+
 void GLContext::setSwapInterval(SwapInterval swapInterval) const {
     if (SDL_GL_SetSwapInterval(static_cast<int>(swapInterval)) != 0) {
         util::Logger::logWarning(channel, SDL_GetError());
