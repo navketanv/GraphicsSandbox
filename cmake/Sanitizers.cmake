@@ -58,4 +58,5 @@ function(enable_sanitizers target)
         endif()
 
     endif()
+
 endfunction(enable_sanitizers)
