@@ -15,6 +15,7 @@ function(enable_sanitizers target)
     # MSVC
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
+        # Address Sanitizer
         if (ENABLE_ASAN)
 
             target_compile_options(${target} PRIVATE
