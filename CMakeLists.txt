@@ -53,6 +53,9 @@ add_executable(GraphicsSandbox
     src/Renderer.cpp
     src/Window.cpp
     src/WindowAccess.cpp
+    src/GPU/OpenGL/Mappings.cpp
+    src/GPU/Types/EnumStrings.cpp
+    src/GPU/Shader.cpp
 
     include/Constants.h
     include/utilities/Logger.h
@@ -66,6 +69,11 @@ add_executable(GraphicsSandbox
     include/GraphicsCore/Color.h
     include/utilities/BitwiseOperations.h
     include/GraphicsCore/Enums.h
+    include/GraphicsCore/GPU/Shader.h
+    include/GraphicsCore/GPU/Types/GraphicsTypes.h
+    include/GraphicsCore/GPU/Types/Enums.h
+    include/GraphicsCore/GPU/Types/EnumStrings.h
+    include/GraphicsCore/GPU/OpenGL/Mappings.h
 )
 
 target_include_directories(GraphicsSandbox

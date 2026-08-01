@@ -16,7 +16,7 @@
 
 function(enable_project_options target)
 
-    target_compile_features(${target} PRIVATE cxx_std_20)
+    target_compile_features(${target} PRIVATE cxx_std_23)
 
     # MSVC
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")

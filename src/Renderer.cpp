@@ -16,7 +16,7 @@ Renderer::Renderer(Window& window)
     util::Logger::logInfo(channel, "Renderer created");
 }
 
-Renderer::~Renderer() {
+Renderer::~Renderer() noexcept {
     util::Logger::location();
     util::Logger::logInfo(channel, "Renderer destroyed");
 }

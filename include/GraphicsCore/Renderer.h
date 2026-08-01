@@ -11,7 +11,7 @@ class Renderer
 {
 public:
     Renderer(Window& window);
-    ~Renderer();
+    ~Renderer() noexcept;
 
     Renderer(const Renderer& rhs) = delete;
     Renderer& operator=(const Renderer& rhs) = delete;
