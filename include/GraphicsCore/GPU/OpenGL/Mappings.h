@@ -1,9 +1,16 @@
 #pragma once
 #include "GraphicsCore/GPU/Types/Enums.h"
-#include <OpenGL/gl.h>
+#include <OpenGL/gl3.h>
+
 namespace GraphicsCore::GPU {
 
 [[nodiscard]]
 GLenum toOpenGL(ShaderStage stage);
 
-} // namespace GraphicsCore::GPU
+[[nodiscard]]
+GLenum toOpenGL(BufferTarget target);
+
+[[nodiscard]]
+GLenum toOpenGL(BufferUsage usage);
+
+} // namespace GraphicsCore::GPUÏ

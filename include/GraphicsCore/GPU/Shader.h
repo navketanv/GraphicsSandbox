@@ -19,16 +19,18 @@ public:
     Shader(Shader&& rhs) noexcept;
     Shader& operator=(Shader&& rhs) noexcept;
 
-    void bind() const noexcept;
-    void unbind() const noexcept;
     constexpr detail::GraphicsHandle handle() const noexcept;
 
 private:
+    void bind() const noexcept;
+    void unbind() const noexcept;
+
     static void verifyShaderCompilation(GraphicsCore::GPU::ShaderStage shaderStage, GraphicsCore::detail::GraphicsHandle shaderHandle);
     static detail::GraphicsHandle compileShader(GraphicsCore::GPU::ShaderStage shaderStage, std::string_view source);
     static void verifyProgramLink(GraphicsCore::detail::GraphicsHandle programHandle);
     static detail::GraphicsHandle createProgram(detail::GraphicsHandle vertexShaderHandle, detail::GraphicsHandle fragmentShaderHandle);
-    static void cleanupShaders(std::initializer_list<GraphicsCore::detail::GraphicsHandle> shaders, GraphicsCore::detail::GraphicsHandle programHandle);
+    static void destroyShaders(std::initializer_list<GraphicsCore::detail::GraphicsHandle> shaders, GraphicsCore::detail::GraphicsHandle programHandle);
+    void destroyProgram() noexcept;
 
 private:
     static inline constexpr std::string_view channel = "Shader";

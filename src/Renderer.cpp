@@ -1,7 +1,7 @@
 #include "GraphicsCore/Renderer.h"
 
 #define GL_SILENCE_DEPRECATION
-#include <OpenGL/gl.h>
+#include <OpenGL/gl3.h>
 
 #include "GraphicsCore/detail/WindowAccess.h"
 #include "utilities/BitwiseOperations.h"

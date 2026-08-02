@@ -56,6 +56,8 @@ add_executable(GraphicsSandbox
     src/GPU/OpenGL/Mappings.cpp
     src/GPU/Types/EnumStrings.cpp
     src/GPU/Shader.cpp
+    src/GPU/Buffer.cpp
+
 
     include/Constants.h
     include/utilities/Logger.h
@@ -74,6 +76,7 @@ add_executable(GraphicsSandbox
     include/GraphicsCore/GPU/Types/Enums.h
     include/GraphicsCore/GPU/Types/EnumStrings.h
     include/GraphicsCore/GPU/OpenGL/Mappings.h
+    include/GraphicsCore/GPU/Buffer.h
 )
 
 target_include_directories(GraphicsSandbox

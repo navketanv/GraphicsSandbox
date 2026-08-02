@@ -3,7 +3,7 @@
 #include "GraphicsCore/Color.h"
 #include "utilities/Logger.h"
 #include <SDL.h>
-#include <OpenGL/gl.h>
+#include <OpenGL/gl3.h>
 
 namespace GraphicsCore
 {

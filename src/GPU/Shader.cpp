@@ -3,7 +3,7 @@
 #include "GraphicsCore/GPU/Types/EnumStrings.h"
 #include "GraphicsCore/GPU/OpenGL/Mappings.h"
 #include "utilities/Logger.h"
-#include <OpenGL/gl.h>
+#include <OpenGL/gl3.h>
 #include <string>
 #include <sstream>
 
@@ -30,12 +30,12 @@ Shader::Shader(std::string_view vertexSource, std::string_view fragmentSource) {
 
 Shader::~Shader() noexcept {
     util::Logger::location();
-    std::stringstream ss;
     if (m_programHandle != 0) {
+        std::stringstream ss;
         ss << "program being deleted with id = " << m_programHandle << '\n';
-        glDeleteProgram(static_cast<GLuint>(m_programHandle));
+        util::Logger::logInfo(channel, ss.str());
     }
-    util::Logger::logInfo(channel, ss.str());
+    destroyProgram();
 }
 
 Shader::Shader(Shader&& rhs) noexcept
@@ -47,9 +47,7 @@ Shader::Shader(Shader&& rhs) noexcept
 Shader& Shader::operator=(Shader&& rhs) noexcept {
     util::Logger::location();
     if (this != &rhs) {
-        if (m_programHandle != 0) {
-            glDeleteProgram(static_cast<GLuint>(m_programHandle));
-        }
+        destroyProgram();
         m_programHandle = std::exchange(rhs.m_programHandle, 0);
     }
     return *this;
@@ -57,7 +55,8 @@ Shader& Shader::operator=(Shader&& rhs) noexcept {
 
 void Shader::bind() const noexcept {
     if (m_programHandle != 0) {
-        glUseProgram(static_cast<GLuint>(m_programHandle));
+        const GLuint programId = static_cast<GLuint>(m_programHandle);
+        glUseProgram(programId);
     }
 }
 
@@ -95,6 +94,12 @@ void Shader::verifyShaderCompilation(GraphicsCore::GPU::ShaderStage shaderStage,
 detail::GraphicsHandle Shader::compileShader(GraphicsCore::GPU::ShaderStage shaderStage, std::string_view source)
 {
     util::Logger::location();
+    if (shaderStage == ShaderStage::eInvalid) {
+        const std::string_view expMessage = std::string_view("Invalid Shader Stage.\n");
+        util::Logger::logException(channel, expMessage);
+        throw std::runtime_error(std::string(expMessage));
+    }
+
     const GLenum shaderType = toOpenGL(shaderStage);
     const std::string_view shaderName = toString(shaderStage);
     const GLuint shaderId = glCreateShader(shaderType);
@@ -154,16 +159,16 @@ detail::GraphicsHandle Shader::createProgram(detail::GraphicsHandle vertexShader
     try {
         verifyProgramLink(programHandle);
     } catch (...) {
-        cleanupShaders(std::initializer_list<detail::GraphicsHandle>{vertexShaderHandle, fragmentShaderHandle}, programHandle);
+        destroyShaders(std::initializer_list<detail::GraphicsHandle>{vertexShaderHandle, fragmentShaderHandle}, programHandle);
         glDeleteProgram(programId);
         throw;
     }
 
-    cleanupShaders(std::initializer_list<detail::GraphicsHandle>{vertexShaderHandle, fragmentShaderHandle}, programHandle);
+    destroyShaders(std::initializer_list<detail::GraphicsHandle>{vertexShaderHandle, fragmentShaderHandle}, programHandle);
     return programHandle;
 }
 
-void Shader::cleanupShaders(std::initializer_list<GraphicsCore::detail::GraphicsHandle> shaders, detail::GraphicsHandle programHandle)
+void Shader::destroyShaders(std::initializer_list<GraphicsCore::detail::GraphicsHandle> shaders, detail::GraphicsHandle programHandle)
 {
     const GLuint programId = static_cast<GLuint>(programHandle);
     for (const auto& shader : shaders) {
@@ -173,6 +178,14 @@ void Shader::cleanupShaders(std::initializer_list<GraphicsCore::detail::Graphics
     for (const auto& shader : shaders) {
         const GLuint shaderId = static_cast<GLuint>(shader);
         glDeleteShader(shaderId);
+    }
+}
+
+void Shader::destroyProgram() noexcept {
+    if (m_programHandle != 0) {
+        const GLuint programId = static_cast<GLuint>(m_programHandle);
+        glDeleteProgram(programId);
+        m_programHandle = 0;
     }
 }
 
