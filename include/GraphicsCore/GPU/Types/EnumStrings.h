@@ -13,4 +13,7 @@ std::string_view toString(BufferTarget target);
 [[nodiscard]]
 std::string_view toString(BufferUsage usage);
 
+[[nodiscard]]
+std::string_view toString(VertexAttributeType type);
+
 } // namespace GraphicsCore::GPU

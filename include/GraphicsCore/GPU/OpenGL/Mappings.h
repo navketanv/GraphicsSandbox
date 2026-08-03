@@ -13,4 +13,7 @@ GLenum toOpenGL(BufferTarget target);
 [[nodiscard]]
 GLenum toOpenGL(BufferUsage usage);
 
+[[nodiscard]]
+GLenum toOpenGL(VertexAttributeType type);
+
 } // namespace GraphicsCore::GPUÏ

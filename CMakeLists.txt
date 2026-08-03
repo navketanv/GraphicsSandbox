@@ -55,8 +55,10 @@ add_executable(GraphicsSandbox
     src/WindowAccess.cpp
     src/GPU/OpenGL/Mappings.cpp
     src/GPU/Types/EnumStrings.cpp
+
     src/GPU/Shader.cpp
     src/GPU/Buffer.cpp
+    src/GPU/VertexArray.cpp
 
 
     include/Constants.h
@@ -77,6 +79,11 @@ add_executable(GraphicsSandbox
     include/GraphicsCore/GPU/Types/EnumStrings.h
     include/GraphicsCore/GPU/OpenGL/Mappings.h
     include/GraphicsCore/GPU/Buffer.h
+    include/GraphicsCore/GPU/VertexArray.h
+    include/GraphicsCore/GPU/VertexAttribute.h
+    include/GraphicsCore/GPU/VertexLayout.h
+    include/GraphicsCore/GPU/Utilities/EnumUtilities.h
+    include/GraphicsCore/GPU/Utilities/ScopedBinder.h
 )
 
 target_include_directories(GraphicsSandbox

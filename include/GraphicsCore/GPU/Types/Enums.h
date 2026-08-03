@@ -22,4 +22,11 @@ enum class BufferUsage {
     eStreamDraw
 };
 
+enum class VertexAttributeType {
+    eInvalid = 0,
+    eFloat,
+    eUnsignedInt,
+    eUnsignedByte
+};
+
 } //namespace GraphicsCore::GPU

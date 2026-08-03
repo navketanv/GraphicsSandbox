@@ -49,4 +49,20 @@ GLenum toOpenGL(BufferUsage usage)
     std::unreachable();
 }
 
+[[nodiscard]]
+GLenum toOpenGL(VertexAttributeType type)
+{
+    switch (type) {
+    case VertexAttributeType::eFloat:
+        return GL_FLOAT;
+    case VertexAttributeType::eUnsignedInt:
+        return GL_UNSIGNED_INT;
+    case VertexAttributeType::eUnsignedByte:
+        return GL_UNSIGNED_BYTE;
+    case VertexAttributeType::eInvalid:
+        break;
+    }
+    std::unreachable();
+}
+
 } // namespace GraphicsCore::GPU

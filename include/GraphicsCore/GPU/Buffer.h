@@ -20,15 +20,15 @@ public:
 
     void upload(std::span<const std::byte> data, BufferUsage usage);
 
-    [[nodiscard]]
-    constexpr BufferTarget target() const noexcept;
-
-private:    
     void bind() const noexcept;
     void unbind() const noexcept;
 
     [[nodiscard]]
-    constexpr detail::GraphicsHandle handle() const noexcept;
+    constexpr BufferTarget target() const noexcept {
+        return m_target;
+    }
+
+private:    
     void destroyBuffer() noexcept;
     void logUpload(std::size_t size, BufferUsage usage) const;
 

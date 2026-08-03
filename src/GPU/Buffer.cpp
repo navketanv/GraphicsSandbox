@@ -2,6 +2,7 @@
 #include "GraphicsCore/GPU/Buffer.h"
 #include "GraphicsCore/GPU/OpenGL/Mappings.h"
 #include "GraphicsCore/GPU/Types/EnumStrings.h"
+#include "GraphicsCore/GPU/Utilities/ScopedBinder.h"
 #include "utilities/Logger.h"
 #include <OpenGL/gl3.h>
 #include <sstream>
@@ -78,17 +79,13 @@ void Buffer::upload(std::span<const std::byte> data, BufferUsage usage)
         throw std::runtime_error(std::string(expMessage));
     }
 
-    bind();
+    ScopedBinder<Buffer> binder(*this);
     glBufferData(toOpenGL(m_target), static_cast<GLsizeiptr>(data.size()), data.data(), toOpenGL(usage));
-    unbind();
     logUpload(data.size(), usage);
 }
 
-constexpr BufferTarget Buffer::target() const noexcept {
-    return m_target;
-}
-
-void Buffer::bind() const noexcept {
+void Buffer::bind() const noexcept
+{
     if (m_bufferHandle != 0) {
         const GLuint bufferId = static_cast<GLuint>(m_bufferHandle);
         glBindBuffer(toOpenGL(m_target), bufferId);
@@ -99,11 +96,8 @@ void Buffer::unbind() const noexcept {
     glBindBuffer(toOpenGL(m_target), 0);
 }
 
-constexpr detail::GraphicsHandle Buffer::handle() const noexcept {
-    return m_bufferHandle;
-}
-
-void Buffer::destroyBuffer() noexcept {
+void Buffer::destroyBuffer() noexcept
+{
     if (m_bufferHandle != 0) {
         const GLuint bufferId = static_cast<GLuint>(m_bufferHandle);
         glDeleteBuffers(1, &bufferId);
@@ -111,7 +105,8 @@ void Buffer::destroyBuffer() noexcept {
     }
 }
 
-void Buffer::logUpload(std::size_t size, BufferUsage usage) const {
+void Buffer::logUpload(std::size_t size, BufferUsage usage) const
+{
     if (size == 0) {
         std::stringstream ss;
         ss << "Uploading Empty Data To The Buffer.\n"

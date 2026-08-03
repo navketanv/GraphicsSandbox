@@ -48,4 +48,20 @@ std::string_view toString(BufferUsage usage)
     std::unreachable();
 }
 
+[[nodiscard]]
+std::string_view toString(VertexAttributeType type)
+{
+    switch (type) {
+    case VertexAttributeType::eFloat:
+        return std::string_view("Float");
+    case VertexAttributeType::eUnsignedInt:
+        return std::string_view("Unsigned Int");
+    case VertexAttributeType::eUnsignedByte:
+        return std::string_view("Unsigned Byte");
+    case VertexAttributeType::eInvalid:
+        return std::string_view("Invalid Vertex Attribute Type");
+    }
+    std::unreachable();
+}
+
 } // namespace GraphicsCore::GPU
