@@ -2,7 +2,7 @@
 #include "GraphicsCore/GPU/Shader.h"
 #include "GraphicsCore/GPU/Types/EnumStrings.h"
 #include "GraphicsCore/GPU/OpenGL/Mappings.h"
-#include "utilities/Logger.h"
+#include "Utilities/Logger.h"
 #include <OpenGL/gl3.h>
 #include <string>
 #include <sstream>

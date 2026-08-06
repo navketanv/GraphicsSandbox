@@ -1,7 +1,7 @@
 #define GL_SILENCE_DEPRECATION
 #include "GraphicsCore/Application.h"
 #include "GraphicsCore/Color.h"
-#include "utilities/Logger.h"
+#include "Utilities/Logger.h"
 #include <SDL.h>
 #include <OpenGL/gl3.h>
 

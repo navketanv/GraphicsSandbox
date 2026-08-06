@@ -62,7 +62,7 @@ add_executable(GraphicsSandbox
 
 
     include/Constants.h
-    include/utilities/Logger.h
+    include/Utilities/Logger.h
     include/GraphicsCore/Application.h
     include/GraphicsCore/SDLSystem.h
     include/GraphicsCore/GLContext.h
@@ -71,7 +71,7 @@ add_executable(GraphicsSandbox
     include/GraphicsCore/detail/WindowAccess.h
     include/GraphicsCore/Renderer.h
     include/GraphicsCore/Color.h
-    include/utilities/BitwiseOperations.h
+    include/Utilities/BitwiseOperations.h
     include/GraphicsCore/Enums.h
     include/GraphicsCore/GPU/Shader.h
     include/GraphicsCore/GPU/Types/GraphicsTypes.h

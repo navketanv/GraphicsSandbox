@@ -3,7 +3,7 @@
 #include "GraphicsCore/GPU/OpenGL/Mappings.h"
 #include "GraphicsCore/GPU/Types/EnumStrings.h"
 #include "GraphicsCore/GPU/Utilities/ScopedBinder.h"
-#include "utilities/Logger.h"
+#include "Utilities/Logger.h"
 #include <OpenGL/gl3.h>
 #include <sstream>
 #include <utility>

@@ -4,8 +4,8 @@
 #include <OpenGL/gl3.h>
 
 #include "GraphicsCore/detail/WindowAccess.h"
-#include "utilities/BitwiseOperations.h"
-#include "utilities/Logger.h"
+#include "Utilities/BitwiseOperations.h"
+#include "Utilities/Logger.h"
 
 namespace GraphicsCore {
 

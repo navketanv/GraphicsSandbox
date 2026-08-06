@@ -1,7 +1,7 @@
 #include "GraphicsCore/GLContext.h"
 #include "GraphicsCore/Window.h"
 #include "GraphicsCore/detail/WindowAccess.h"
-#include "utilities/Logger.h"
+#include "Utilities/Logger.h"
 #include <stdexcept>
 #include <string>
 

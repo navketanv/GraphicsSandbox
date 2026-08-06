@@ -1,5 +1,5 @@
 #include "GraphicsCore/Window.h"
-#include "utilities/Logger.h"
+#include "Utilities/Logger.h"
 #include "Constants.h"
 #include <stdexcept>
 #include <string>
