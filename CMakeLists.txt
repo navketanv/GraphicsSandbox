@@ -84,6 +84,7 @@ add_executable(GraphicsSandbox
     include/GraphicsCore/GPU/VertexLayout.h
     include/GraphicsCore/GPU/Utilities/EnumUtilities.h
     include/GraphicsCore/GPU/Utilities/ScopedBinder.h
+    include/Utilities/ScopeGuard.h
 )
 
 target_include_directories(GraphicsSandbox

@@ -3,6 +3,7 @@
 #include "GraphicsCore/GPU/Types/EnumStrings.h"
 #include "GraphicsCore/GPU/OpenGL/Mappings.h"
 #include "Utilities/Logger.h"
+#include "Utilities/ScopeGuard.h"
 #include <OpenGL/gl3.h>
 #include <string>
 #include <sstream>
@@ -150,21 +151,23 @@ detail::GraphicsHandle Shader::createProgram(detail::GraphicsHandle vertexShader
 
     const GLuint vertexShaderId = static_cast<GLuint>(vertexShaderHandle);
     const GLuint fragmentShaderId = static_cast<GLuint>(fragmentShaderHandle);
+    const detail::GraphicsHandle programHandle = static_cast<detail::GraphicsHandle>(programId);
 
     glAttachShader(programId, vertexShaderId);
     glAttachShader(programId, fragmentShaderId);
     glLinkProgram(programId);
 
-    const detail::GraphicsHandle programHandle = static_cast<detail::GraphicsHandle>(programId);
-    try {
-        verifyProgramLink(programHandle);
-    } catch (...) {
+    bool bVerifiedProgramLink{false};
+    util::ScopeGuard shaderCleanup([&]() noexcept {
         destroyShaders(std::initializer_list<detail::GraphicsHandle>{vertexShaderHandle, fragmentShaderHandle}, programHandle);
-        glDeleteProgram(programId);
-        throw;
-    }
+        if (!bVerifiedProgramLink) {
+            glDeleteProgram(programId);
+        }
+    });
 
-    destroyShaders(std::initializer_list<detail::GraphicsHandle>{vertexShaderHandle, fragmentShaderHandle}, programHandle);
+    verifyProgramLink(programHandle);
+    bVerifiedProgramLink = true;
+
     return programHandle;
 }
 
