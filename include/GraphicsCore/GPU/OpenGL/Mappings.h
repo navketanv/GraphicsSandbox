@@ -16,4 +16,10 @@ GLenum toOpenGL(BufferUsage usage);
 [[nodiscard]]
 GLenum toOpenGL(VertexAttributeType type);
 
+[[nodiscard]]
+GLenum toOpenGL(PrimitiveTopology topology);
+
+[[nodiscard]]
+GLenum toOpenGL(IndexType type);
+
 } // namespace GraphicsCore::GPUÏ

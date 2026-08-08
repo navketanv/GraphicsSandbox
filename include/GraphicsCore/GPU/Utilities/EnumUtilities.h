@@ -22,4 +22,42 @@ constexpr std::size_t sizeOf(VertexAttributeType type)
     std::unreachable();
 }
 
+[[nodiscard]]
+constexpr std::size_t sizeOf(IndexType type)
+{
+    switch (type) {
+    case IndexType::eUnsignedByte:
+        return sizeof(std::uint8_t);
+    case IndexType::eUnsignedShort:
+        return sizeof(std::uint16_t);
+    case IndexType::eUnsignedInt:
+        return sizeof(std::uint32_t);
+    case IndexType::eInvalid:
+        break;
+    }
+    std::unreachable();
+}
+
+template<typename T>
+[[nodiscard]]
+constexpr IndexType toIndexType();
+
+template<>
+[[nodiscard]]
+constexpr IndexType toIndexType<std::uint8_t>() {
+    return IndexType::eUnsignedByte;
+}
+
+template<>
+[[nodiscard]]
+constexpr IndexType toIndexType<std::uint16_t>() {
+    return IndexType::eUnsignedShort;
+}
+
+template<>
+[[nodiscard]]
+constexpr IndexType toIndexType<std::uint32_t>() {
+    return IndexType::eUnsignedInt;
+}
+
 } // namespace GraphicsCore::GPU

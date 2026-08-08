@@ -59,7 +59,7 @@ add_executable(GraphicsSandbox
     src/GPU/Shader.cpp
     src/GPU/Buffer.cpp
     src/GPU/VertexArray.cpp
-
+    src/GPU/Mesh.cpp
 
     include/Constants.h
     include/Utilities/Logger.h
@@ -85,6 +85,8 @@ add_executable(GraphicsSandbox
     include/GraphicsCore/GPU/Utilities/EnumUtilities.h
     include/GraphicsCore/GPU/Utilities/ScopedBinder.h
     include/Utilities/ScopeGuard.h
+    include/GraphicsCore/GPU/Mesh.h
+    include/GraphicsCore/GPU/Vertex.h
 )
 
 target_include_directories(GraphicsSandbox

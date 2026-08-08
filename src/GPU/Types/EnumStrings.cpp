@@ -64,4 +64,31 @@ std::string_view toString(VertexAttributeType type)
     std::unreachable();
 }
 
+[[nodiscard]]
+std::string_view toString(PrimitiveTopology topology) {
+    switch (topology) {
+    case PrimitiveTopology::eTriangles:
+        return std::string_view("Trianlges");
+    case GraphicsCore::GPU::PrimitiveTopology::eInvalid:
+        return std::string_view("Invalid Primitive Topology");
+    }
+    std::unreachable();
+}
+
+[[nodiscard]]
+std::string_view toString(IndexType type)
+{
+    switch (type) {
+    case IndexType::eUnsignedByte:
+        return std::string_view("Unsigned Byte");
+    case IndexType::eUnsignedShort:
+        return std::string_view("Unsigned Short");
+    case IndexType::eUnsignedInt:
+        return std::string_view("Unsigned Int");
+    case IndexType::eInvalid:
+        return std::string_view("Invalid Index Type");
+    }
+    std::unreachable();
+}
+
 } // namespace GraphicsCore::GPU

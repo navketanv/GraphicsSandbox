@@ -65,4 +65,31 @@ GLenum toOpenGL(VertexAttributeType type)
     std::unreachable();
 }
 
+[[nodiscard]]
+GLenum toOpenGL(PrimitiveTopology topology)
+{
+    switch (topology) {
+    case PrimitiveTopology::eTriangles:
+        return GL_TRIANGLES;
+    case PrimitiveTopology::eInvalid:
+        break;
+    }
+    std::unreachable();
+}
+
+[[nodiscard]]
+GLenum toOpenGL(IndexType type) {
+    switch (type) {
+    case IndexType::eUnsignedByte:
+        return GL_UNSIGNED_BYTE;
+    case IndexType::eUnsignedShort:
+        return GL_UNSIGNED_SHORT;
+    case IndexType::eUnsignedInt:
+        return GL_UNSIGNED_INT;
+    case IndexType::eInvalid:
+        break;
+    }
+    std::unreachable();
+}
+
 } // namespace GraphicsCore::GPU

@@ -16,4 +16,10 @@ std::string_view toString(BufferUsage usage);
 [[nodiscard]]
 std::string_view toString(VertexAttributeType type);
 
+[[nodiscard]]
+std::string_view toString(PrimitiveTopology topology);
+
+[[nodiscard]]
+std::string_view toString(IndexType type);
+
 } // namespace GraphicsCore::GPU

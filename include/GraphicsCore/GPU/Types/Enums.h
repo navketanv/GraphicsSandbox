@@ -29,4 +29,16 @@ enum class VertexAttributeType {
     eUnsignedByte
 };
 
+enum class PrimitiveTopology {
+    eInvalid = 0,
+    eTriangles
+};
+
+enum class IndexType {
+    eInvalid = 0,
+    eUnsignedByte,
+    eUnsignedShort,
+    eUnsignedInt
+};
+
 } //namespace GraphicsCore::GPU
