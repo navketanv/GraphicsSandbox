@@ -52,14 +52,18 @@ add_executable(GraphicsSandbox
     src/GLContextAccess.cpp
     src/Renderer.cpp
     src/Window.cpp
+    src/Scene.cpp
     src/WindowAccess.cpp
+    src/FileSystem.cpp
+    src/TriangleGeometry.cpp
+
     src/GPU/OpenGL/Mappings.cpp
     src/GPU/Types/EnumStrings.cpp
-
     src/GPU/Shader.cpp
     src/GPU/Buffer.cpp
     src/GPU/VertexArray.cpp
     src/GPU/Mesh.cpp
+
 
     include/Constants.h
     include/Utilities/Logger.h
@@ -68,6 +72,7 @@ add_executable(GraphicsSandbox
     include/GraphicsCore/GLContext.h
     include/GraphicsCore/detail/GLContextAccess.h
     include/GraphicsCore/Window.h
+    include/GraphicsCore/Scene.h
     include/GraphicsCore/detail/WindowAccess.h
     include/GraphicsCore/Renderer.h
     include/GraphicsCore/Color.h
@@ -87,6 +92,8 @@ add_executable(GraphicsSandbox
     include/Utilities/ScopeGuard.h
     include/GraphicsCore/GPU/Mesh.h
     include/GraphicsCore/GPU/Vertex.h
+    include/Utilities/FileSystem.h
+    include/Geometry/TriangleGeometry.h
 )
 
 target_include_directories(GraphicsSandbox

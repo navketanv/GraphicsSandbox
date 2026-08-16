@@ -19,12 +19,10 @@ public:
     Shader(Shader&& rhs) noexcept;
     Shader& operator=(Shader&& rhs) noexcept;
 
-    constexpr detail::GraphicsHandle handle() const noexcept;
-
-private:
     void bind() const noexcept;
     void unbind() const noexcept;
 
+private:
     static void verifyShaderCompilation(GraphicsCore::GPU::ShaderStage shaderStage, GraphicsCore::detail::GraphicsHandle shaderHandle);
     static detail::GraphicsHandle compileShader(GraphicsCore::GPU::ShaderStage shaderStage, std::string_view source);
     static void verifyProgramLink(GraphicsCore::detail::GraphicsHandle programHandle);

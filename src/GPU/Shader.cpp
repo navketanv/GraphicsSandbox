@@ -65,10 +65,6 @@ void Shader::unbind() const noexcept {
     glUseProgram(0);
 }
 
-constexpr detail::GraphicsHandle Shader::handle() const noexcept {
-    return m_programHandle;
-}
-
 void Shader::verifyShaderCompilation(GraphicsCore::GPU::ShaderStage shaderStage, GraphicsCore::detail::GraphicsHandle shaderHandle)
 {
     util::Logger::location();

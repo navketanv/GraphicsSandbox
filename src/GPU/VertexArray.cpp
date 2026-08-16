@@ -107,7 +107,7 @@ void VertexArray::attachIndexBuffer(const Buffer& buffer) const
         throw std::runtime_error(ss.str());
     }
     ScopedBinder<VertexArray> vao(*this);
-    ScopedBinder<Buffer> bufferObj(buffer);
+    buffer.bind();
 }
 
 void VertexArray::bind() const noexcept

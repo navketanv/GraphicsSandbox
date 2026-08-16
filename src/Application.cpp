@@ -15,6 +15,14 @@ Application::Application()
     util::Logger::location();
     m_pContext = std::make_unique<GLContext>(*m_pWindow);
     m_pRenderer = std::make_unique<Renderer>(*m_pWindow);
+
+    try {
+        m_pScene = std::make_unique<Scene>();
+    } catch (const std::exception& exception) {
+        util::Logger::logException(channel, exception.what());
+        throw;
+    }
+
     util::Logger::logInfo(channel, "Application Created");
 }
 
@@ -48,6 +56,7 @@ int Application::run() {
 
         m_pRenderer->setClearColor(Colors::Red);
         m_pRenderer->beginFrame();
+        m_pScene->render();
         m_pRenderer->endFrame();
     }
     return 0;

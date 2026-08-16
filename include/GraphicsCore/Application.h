@@ -5,6 +5,7 @@
 #include "GraphicsCore/Window.h"
 #include "GraphicsCore/GLContext.h"
 #include "GraphicsCore/Renderer.h"
+#include "GraphicsCore/Scene.h"
 
 namespace GraphicsCore
 {
@@ -30,6 +31,7 @@ private:
     std::unique_ptr<Window> m_pWindow{};
     std::unique_ptr<GLContext> m_pContext{};
     std::unique_ptr<Renderer> m_pRenderer{};
+    std::unique_ptr<Scene> m_pScene{};
 };
 
 } // namespace GraphicsCore
