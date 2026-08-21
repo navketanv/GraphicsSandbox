@@ -77,7 +77,7 @@ add_executable(GraphicsSandbox
     # Geometry
     # ==========================================================
 
-    src/TriangleGeometry.cpp
+    src/Geometry/Triangle.cpp
 
 
     # ==========================================================
@@ -133,7 +133,7 @@ add_executable(GraphicsSandbox
     include/Utilities/FileSystem.h
     include/Utilities/BitwiseOperations.h
     include/Utilities/ScopeGuard.h
-
+    include/Utilities/ByteViews.h
 
     # ==========================================================
     # GPU / Headers
@@ -143,9 +143,7 @@ add_executable(GraphicsSandbox
     include/GraphicsCore/GPU/Buffer.h
     include/GraphicsCore/GPU/VertexArray.h
     include/GraphicsCore/GPU/VertexAttribute.h
-    include/GraphicsCore/GPU/VertexLayout.h
     include/GraphicsCore/GPU/Mesh.h
-    include/GraphicsCore/GPU/Vertex.h
 
 
     # ==========================================================
@@ -176,7 +174,10 @@ add_executable(GraphicsSandbox
     # Geometry
     # ==========================================================
 
-    include/Geometry/TriangleGeometry.h
+    include/GraphicsCore/Geometry/VertexLayout.h
+    include/GraphicsCore/Geometry/MeshData.h
+    include/GraphicsCore/Geometry/Triangle.h
+    include/GraphicsCore/Geometry/Vertex.h
 )
 
 target_include_directories(GraphicsSandbox

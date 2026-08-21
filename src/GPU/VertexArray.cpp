@@ -53,7 +53,7 @@ VertexArray& VertexArray::operator=(VertexArray&& rhs) noexcept
     return *this;
 }
 
-void VertexArray::attachVertexBuffer(const Buffer& buffer, const VertexLayout& layout) const
+void VertexArray::attachVertexBuffer(const Buffer& buffer, const Geometry::VertexLayout &layout) const
 {
     if (buffer.target() != BufferTarget::eVertex) {
         std::stringstream ss;

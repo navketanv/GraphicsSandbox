@@ -2,8 +2,7 @@
 #include "GraphicsCore/GPU/Utilities/ScopedBinder.h"
 #include "Utilities/FileSystem.h"
 #include "Utilities/Logger.h"
-#include "Geometry/TriangleGeometry.h"
-#include <span>
+#include "GraphicsCore/Geometry/Triangle.h"
 
 namespace GraphicsCore {
 
@@ -12,7 +11,7 @@ Scene::Scene()
         util::FileSystem::readTextFile("assets/shaders/triangle.vert.glsl"),
         util::FileSystem::readTextFile("assets/shaders/triangle.frag.glsl")
     )
-    , m_mesh(std::span<const GPU::Vertex>{TriangleGeometry::vertices}, std::span<const std::uint32_t>{TriangleGeometry::indices}, TriangleGeometry::vertexLayout())
+    , m_mesh(Geometry::Triangle::create())
 {
     util::Logger::location();
 }

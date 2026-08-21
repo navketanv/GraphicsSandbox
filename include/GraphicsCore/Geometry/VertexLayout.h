@@ -5,7 +5,7 @@
 #include "GraphicsCore/GPU/VertexAttribute.h"
 #include "GraphicsCore/GPU/Utilities/EnumUtilities.h"
 
-namespace GraphicsCore::GPU {
+namespace GraphicsCore::Geometry {
 
 class VertexLayout
 {
@@ -18,11 +18,11 @@ public:
     VertexLayout& operator=(VertexLayout&& rhs) = default;
 
     template<typename... Args>
-        requires(std::constructible_from<VertexAttribute, Args...>)
+        requires(std::constructible_from<GPU::VertexAttribute, Args...>)
     void addAttribute(Args&&... args)
     {
         m_attributes.emplace_back(std::forward<Args>(args)...);
-        const VertexAttribute& attribute = m_attributes.back();
+        const GPU::VertexAttribute& attribute = m_attributes.back();
         m_stride += attribute.componentCount() * sizeOf(attribute.type());
     }
 
@@ -32,7 +32,7 @@ public:
     }
 
     [[nodiscard]]
-    constexpr std::span<const VertexAttribute> attributes() const noexcept {
+    constexpr std::span<const GPU::VertexAttribute> attributes() const noexcept {
         return m_attributes;
     }
 
@@ -42,8 +42,8 @@ public:
     }
 
 private:
-    std::vector<VertexAttribute> m_attributes{};
+    std::vector<GPU::VertexAttribute> m_attributes{};
     std::size_t m_stride{};
 };
 
-} // namespace GraphicsCore::GPU
+} // namespace GraphicsCore::Geometry

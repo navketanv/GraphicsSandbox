@@ -1,7 +1,7 @@
 #pragma once
 #include "GraphicsCore/GPU/Types/GraphicsTypes.h"
 #include "GraphicsCore/GPU/Buffer.h"
-#include "GraphicsCore/GPU/VertexLayout.h"
+#include "GraphicsCore/Geometry/VertexLayout.h"
 #include <string_view>
 
 namespace GraphicsCore::GPU {
@@ -18,7 +18,7 @@ public:
     VertexArray(VertexArray&& rhs) noexcept;
     VertexArray& operator=(VertexArray&& rhs) noexcept;
 
-    void attachVertexBuffer(const Buffer& buffer, const VertexLayout& layout) const;
+    void attachVertexBuffer(const Buffer& buffer, const Geometry::VertexLayout& layout) const;
     void attachIndexBuffer(const Buffer& buffer) const;
 
     void bind() const noexcept;
