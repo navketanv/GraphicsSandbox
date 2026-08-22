@@ -1,13 +1,14 @@
 #pragma once
 #include "GraphicsCore/GPU/Shader.h"
 #include "GraphicsCore/GPU/Mesh.h"
+#include "GraphicsCore/Geometry/Types/Enums.h"
 
 namespace GraphicsCore {
 
 class Scene
 {
 public:
-    Scene();
+    explicit Scene(GPU::Mesh mesh);
     ~Scene() noexcept;
 
     Scene(const Scene&) = delete;
@@ -15,6 +16,8 @@ public:
 
     Scene(Scene&&) = delete;
     Scene& operator=(Scene&&) = delete;
+
+    void setGeometry(Geometry::GeometryType type);
 
     void render() const;
 

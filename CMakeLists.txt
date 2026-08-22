@@ -78,6 +78,7 @@ add_executable(GraphicsSandbox
     # ==========================================================
 
     src/Geometry/Triangle.cpp
+    src/Geometry/Rectangle.cpp
 
 
     # ==========================================================
@@ -171,13 +172,21 @@ add_executable(GraphicsSandbox
 
 
     # ==========================================================
-    # Geometry
+    # Geometry / Headers
     # ==========================================================
 
     include/GraphicsCore/Geometry/VertexLayout.h
     include/GraphicsCore/Geometry/MeshData.h
     include/GraphicsCore/Geometry/Triangle.h
     include/GraphicsCore/Geometry/Vertex.h
+    include/GraphicsCore/Geometry/Rectangle.h
+    include/GraphicsCore/Geometry/GeometryFactory.h
+
+    # ==========================================================
+    # Geometry / Types
+    # ==========================================================
+
+    include/GraphicsCore/Geometry/Types/Enums.h
 )
 
 target_include_directories(GraphicsSandbox

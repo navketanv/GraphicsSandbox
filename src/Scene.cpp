@@ -1,19 +1,25 @@
 #include "GraphicsCore/Scene.h"
 #include "GraphicsCore/GPU/Utilities/ScopedBinder.h"
+#include "GraphicsCore/Geometry/GeometryFactory.h"
 #include "Utilities/FileSystem.h"
 #include "Utilities/Logger.h"
-#include "GraphicsCore/Geometry/Triangle.h"
 
 namespace GraphicsCore {
 
-Scene::Scene()
+Scene::Scene(GPU::Mesh mesh)
     : m_shader(
-        util::FileSystem::readTextFile("assets/shaders/triangle.vert.glsl"),
-        util::FileSystem::readTextFile("assets/shaders/triangle.frag.glsl")
+        util::FileSystem::readTextFile("assets/shaders/basic.vert.glsl"),
+        util::FileSystem::readTextFile("assets/shaders/basic.frag.glsl")
     )
-    , m_mesh(Geometry::Triangle::create())
+    , m_mesh(std::move(mesh))
 {
     util::Logger::location();
+}
+
+void Scene::setGeometry(Geometry::GeometryType type)
+{
+    const Geometry::MeshData meshData = Geometry::GeometryFactory::createGeometry(type);
+    m_mesh = GPU::Mesh(meshData);
 }
 
 void Scene::render() const

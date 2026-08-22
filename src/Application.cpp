@@ -1,5 +1,7 @@
 #define GL_SILENCE_DEPRECATION
 #include "GraphicsCore/Application.h"
+#include "GraphicsCore/Geometry/GeometryFactory.h"
+#include "GraphicsCore/Geometry/Types/Enums.h"
 #include "GraphicsCore/Color.h"
 #include "Utilities/Logger.h"
 #include <SDL.h>
@@ -17,7 +19,7 @@ Application::Application()
     m_pRenderer = std::make_unique<Renderer>(*m_pWindow);
 
     try {
-        m_pScene = std::make_unique<Scene>();
+        m_pScene = std::make_unique<Scene>(Geometry::GeometryFactory::createGeometry(Geometry::GeometryType::eRectangle));
     } catch (const std::exception& exception) {
         util::Logger::logException(channel, exception.what());
         throw;
@@ -41,10 +43,19 @@ int Application::run() {
                 m_bIsRunning = false;
                 break;
             case SDL_KEYDOWN:
-                if (event.key.keysym.sym == SDLK_ESCAPE) {
+                switch (event.key.keysym.sym) {
+                case SDLK_1:
+                    m_pScene->setGeometry(Geometry::GeometryType::eTriangle);
+                    break;
+                case SDLK_2:
+                    m_pScene->setGeometry(Geometry::GeometryType::eRectangle);
+                    break;
+                case SDLK_ESCAPE:
                     m_bIsRunning = false;
+                    break;
+                default:
+                    break;
                 }
-                break;
             default:
                 break;
             }

@@ -1,0 +1,2173 @@
+PROJECT: Modern C++20 Graphics Engine (OpenGL 4.1 Core, macOS)
+
+## Goal
+
+Build a modern graphics engine from scratch with strong C++ design rather than simply wrapping OpenGL.
+
+## Platform
+
+- macOS
+- SDL2
+- OpenGL 4.1 Core Profile
+- C++20
+- CMake
+- Qt Creator
+
+## Overall Philosophy
+
+- RAII everywhere
+- Rule of Five
+- noexcept wherever appropriate
+- [[nodiscard]] where return values matter
+- Strong ownership semantics
+- Composition over inheritance
+- Small public interfaces
+- Explicit code style (user prefers explicit switch cases, std::string\_view("..."), etc.)
+- No unnecessary dynamic allocation
+- Avoid exposing OpenGL details in public APIs unless necessary.
+
+## Project Structure (GPU layer completed so far)
+
+Implemented:
+
+- Shader
+- Buffer
+- VertexLayout
+- VertexAttribute
+- VertexArray
+- Mesh
+
+Utilities added:
+
+- ScopedBinder
+- ScopeGuard
+
+## ScopedBinder
+
+Generic RAII helper.
+
+Concept:
+
+template
+concept Bindable = requires(const T& obj)
+{
+{ obj.bind() } noexcept;
+{ obj.unbind() } noexcept;
+};
+
+Usage:
+
+ScopedBinder vao(m\_vertexArray);
+ScopedBinder buffer(m\_vertexBuffer);
+
+Automatically binds on construction and unbinds on destruction.
+
+bind()/unbind() are intentionally public.
+
+## ScopeGuard
+
+Generic cleanup utility.
+
+template\<std::invocable Cleanup>
+class ScopeGuard
+
+Stores cleanup callable by value.
+
+Deduction guide:
+
+template
+ScopeGuard(T&&) -> ScopeGuard\<std::remove\_cvref\_t>;
+
+Used inside Shader::createProgram() to guarantee shader cleanup.
+
+## Shader
+
+Implemented:
+
+- shader compilation
+- shader linking
+- verification
+- RAII
+- move-only semantics
+
+Program creation now uses ScopeGuard.
+
+Pseudo-flow:
+
+create shaders
+attach
+link
+ScopeGuard(cleanup shaders + delete program on failure)
+verify link
+mark success
+return handle
+
+This removed duplicated cleanup logic.
+
+## Buffer
+
+Represents OpenGL buffer object.
+
+Supports:
+
+BufferTarget:
+
+- Vertex
+- Index
+
+BufferUsage enum
+
+upload(std::span)
+
+Uses ScopedBinder internally.
+
+RAII.
+
+Move-only.
+
+## VertexAttribute
+
+Stores:
+
+- location
+- component count
+- type
+- normalized
+- offset
+
+## VertexLayout
+
+Stores vector
+
+Maintains stride.
+
+Computes offsets.
+
+## VertexArray
+
+RAII wrapper around VAO.
+
+Public:
+
+attachVertexBuffer(...)
+attachIndexBuffer(...)
+bind()
+unbind()
+
+attach methods are const because they modify GPU state, not C++ object state.
+
+Validation performed:
+
+- correct buffer target
+- valid component count
+- valid attribute type
+
+Uses ScopedBinder internally.
+
+## Mesh
+
+Composition (NOT unique\_ptr):
+
+VertexArray m\_vertexArray;
+Buffer m\_vertexBuffer;
+Buffer m\_indexBuffer;
+
+Additional members:
+
+PrimitiveTopology m\_topology{PrimitiveTopology::eTriangles};
+IndexType m\_indexType{IndexType::eInvalid};
+std::size\_t m\_indexCount{};
+
+Move-only.
+
+Construction:
+
+template<
+typename VertexT,
+IndexElementType IndexT>
+Mesh(
+std::span vertices,
+std::span indices,
+const VertexLayout& layout);
+
+Uploads:
+
+vertex buffer
+index buffer
+
+Attaches both buffers to VAO.
+
+draw()
+
+Checks index count.
+
+Uses ScopedBinder.
+
+Calls:
+
+glDrawElements(
+toOpenGL(m\_topology),
+static\_cast(m\_indexCount),
+toOpenGL(m\_indexType),
+nullptr);
+
+## Enums
+
+PrimitiveTopology
+
+VertexAttributeType
+
+BufferTarget
+
+BufferUsage
+
+IndexType
+
+IndexType contains:
+
+- UnsignedByte
+- UnsignedShort
+- UnsignedInt
+- Invalid
+
+## Utilities
+
+sizeOf(VertexAttributeType)
+
+sizeOf(IndexType)
+
+toIndexType()
+
+Specialized for:
+
+uint8\_t
+uint16\_t
+uint32\_t
+
+Concept:
+
+template
+concept IndexElementType =
+std::same\_as\<T,uint8\_t> ||
+std::same\_as\<T,uint16\_t> ||
+std::same\_as\<T,uint32\_t>;
+
+## OpenGL mappings
+
+Dedicated mapping layer exists.
+
+Examples:
+
+toOpenGL(BufferTarget)
+
+toOpenGL(BufferUsage)
+
+toOpenGL(VertexAttributeType)
+
+toOpenGL(IndexType)
+
+toOpenGL(PrimitiveTopology)
+
+## Logging
+
+Custom Logger.
+
+Functions include:
+
+location()
+
+logInfo()
+
+logWarning()
+
+logException()
+
+Current logging is verbose for development.
+
+Later it will become debug-only.
+
+## Important Design Decisions
+
+- Composition instead of unique\_ptr inside Mesh.
+- attachVertexBuffer()/attachIndexBuffer() are const.
+- bind()/unbind() intentionally public.
+- Generic RAII utilities live under util namespace.
+- Explicit coding style preferred over compact style.
+- Avoid "magic" abstractions.
+
+## Current State
+
+GPU abstraction layer is essentially complete.
+
+Implemented stack:
+
+Shader
+↓
+
+Buffer
+
+↓
+
+VertexLayout
+
+↓
+
+VertexArray
+
+↓
+
+Mesh
+
+The abstractions are now capable of issuing:
+
+glDrawElements(...)
+
+## Remaining Work (Next Phase)
+
+Start actually rendering.
+
+Likely order:
+
+1. Create first Vertex type
+2. Create triangle data
+3. Create VertexLayout describing Vertex
+4. Construct Mesh
+5. Create Shader
+6. Render first colored triangle
+7. Introduce Renderer abstraction afterwards if appropriate
+
+## Longer-Term Roadmap
+
+- Texture
+- Uniform abstraction
+- Material
+- Camera
+- Transform
+- Scene graph / Entity layer
+- Renderer
+- Render passes
+- Framebuffers
+- Instancing
+- Lighting
+
+
+Absolutely. Here is a compact but sufficiently detailed handoff summary you can paste into the new thread:
+
+```text
+PROJECT CONTEXT — GraphicsCore / GraphicsSandbox
+
+I am building a modern C++20 graphics engine from scratch on macOS Apple Silicon using:
+- C++20
+- CMake 4.3.3
+- Qt Creator
+- SDL2
+- OpenGL 4.1 Core Profile
+- macOS OpenGL/Metal backend
+
+Design philosophy:
+- RAII everywhere
+- Strong ownership semantics
+- Composition over inheritance
+- Small public interfaces
+- Explicit, readable code
+- noexcept where appropriate
+- [[nodiscard]] where return values matter
+- Avoid unnecessary allocations
+- Keep OpenGL details out of higher-level public APIs
+- Prefer expressive code that remains understandable without an IDE
+
+CURRENT ARCHITECTURE
+
+GraphicsCore
+├── Application
+├── SDLSystem
+├── Window
+├── GLContext
+├── Renderer
+├── Scene
+├── Geometry
+│   └── TriangleGeometry
+├── GPU
+│   ├── Shader
+│   ├── Buffer
+│   ├── Vertex
+│   ├── VertexAttribute
+│   ├── VertexLayout
+│   ├── VertexArray
+│   ├── Mesh
+│   ├── Types
+│   ├── OpenGL
+│   └── Utilities
+└── Utilities
+
+Important GPU classes:
+- Shader
+- Buffer
+- VertexArray
+- VertexAttribute
+- VertexLayout
+- Mesh
+- ScopedBinder
+
+Vertex:
+
+namespace GraphicsCore::GPU {
+
+struct Vertex {
+    std::array<float, 3> m_position;
+    std::array<float, 3> m_color;
+};
+
+}
+
+TriangleGeometry currently contains hard-coded triangle geometry:
+
+struct TriangleGeometry {
+    static constexpr std::array<GPU::Vertex, 3> vertices {
+        GPU::Vertex {
+            {0.0f, 0.5f, 0.0f},
+            {1.0f, 0.0f, 0.0f}
+        },
+        GPU::Vertex {
+            {-0.5f, -0.5f, 0.0f},
+            {0.0f, 1.0f, 0.0f}
+        },
+        GPU::Vertex {
+            {0.5f, -0.5f, 0.0f},
+            {0.0f, 0.0f, 1.0f}
+        }
+    };
+
+    static constexpr std::array<std::uint32_t, 3> indices {
+        0, 1, 2
+    };
+
+    static constexpr auto positionComponentCount() noexcept {
+        return static_cast<std::size_t>(GPU::Vertex{}.m_position.size());
+    }
+
+    static constexpr auto colorComponentCount() noexcept {
+        return static_cast<std::size_t>(GPU::Vertex{}.m_color.size());
+    }
+
+    [[nodiscard]]
+    static GPU::VertexLayout vertexLayout();
+};
+
+TriangleGeometry::vertexLayout() is defined in TriangleGeometry.cpp:
+
+GPU::VertexLayout TriangleGeometry::vertexLayout()
+{
+    GPU::VertexLayout layout{};
+    const std::size_t positionOffset = 0;
+    const std::size_t colorOffset =
+        positionComponentCount() *
+        GPU::sizeOf(GPU::VertexAttributeType::eFloat);
+
+    layout.addAttribute(
+        0,
+        positionComponentCount(),
+        positionOffset,
+        GPU::VertexAttributeType::eFloat,
+        false
+    );
+
+    layout.addAttribute(
+        1,
+        colorComponentCount(),
+        colorOffset,
+        GPU::VertexAttributeType::eFloat,
+        false
+    );
+
+    return layout;
+}
+
+We decided to keep the declaration in the header and the definition in .cpp rather than inline, because TriangleGeometry may grow and we want to avoid making the header unmanageable.
+
+VertexLayout:
+- Holds std::vector<VertexAttribute>
+- Calculates stride from each attribute:
+  componentCount * sizeOf(type)
+- attributes() returns std::span<const VertexAttribute>
+- addAttribute() is templated and forwards to VertexAttribute constructor.
+
+Important clarification:
+VertexAttribute::componentCount() means the number of scalar components in ONE vertex attribute:
+- vec1 -> 1
+- vec2 -> 2
+- vec3 -> 3
+- vec4 -> 4
+It does NOT mean number of vertices/objects to draw.
+
+Therefore TriangleGeometry uses:
+GPU::Vertex{}.m_position.size()
+GPU::Vertex{}.m_color.size()
+to derive component counts instead of hard-coding 3.
+
+Mesh:
+
+template<typename T>
+concept IndexElementType =
+    std::same_as<T, std::uint8_t> ||
+    std::same_as<T, std::uint16_t> ||
+    std::same_as<T, std::uint32_t>;
+
+template<typename VertexT, IndexElementType IndexT>
+    requires(std::is_trivially_copyable_v<VertexT>)
+Mesh(
+    std::span<const VertexT> vertices,
+    std::span<const IndexT> indices,
+    const VertexLayout& layout
+);
+
+Mesh contains:
+- VertexArray m_vertexArray
+- Buffer m_vertexBuffer{BufferTarget::eVertex}
+- Buffer m_indexBuffer{BufferTarget::eIndex}
+- PrimitiveTopology m_topology{PrimitiveTopology::eTriangles}
+- IndexType m_indexType
+- std::size_t m_indexCount
+
+Mesh constructor uploads:
+m_vertexBuffer.upload(std::as_bytes(vertices), BufferUsage::eStaticDraw);
+m_indexBuffer.upload(std::as_bytes(indices), BufferUsage::eStaticDraw);
+
+then:
+m_vertexArray.attachVertexBuffer(m_vertexBuffer, layout);
+m_vertexArray.attachIndexBuffer(m_indexBuffer);
+
+Scene constructs the Shader and Mesh in its member initializer list:
+
+Scene::Scene()
+    : m_shader(
+        util::FileSystem::readTextFile("assets/shaders/triangle.vert.glsl"),
+        util::FileSystem::readTextFile("assets/shaders/triangle.frag.glsl")
+    )
+    , m_mesh(
+        std::span<const GPU::Vertex>{TriangleGeometry::vertices},
+        std::span<const std::uint32_t>{TriangleGeometry::indices},
+        TriangleGeometry::vertexLayout()
+    )
+{
+    util::Logger::location();
+}
+
+The explicit std::span<const T>{...} worked whereas:
+std::span{TriangleGeometry::vertices}
+did not in this constructor context. The reason is CTAD/deduction and the exact span type needed by the templated Mesh constructor.
+
+Scene currently:
+- owns Shader and Mesh directly
+- copy/move are deleted
+- no explicit error handling in Scene because construction failures propagate via exceptions
+- Application catches Scene construction exceptions if desired
+- no need for move constructor/assignment because Scene is directly owned by unique_ptr and is intentionally non-copyable/non-movable
+
+Scene::render():
+
+void Scene::render() const
+{
+    GPU::ScopedBinder<GPU::Shader> shaderBinder(m_shader);
+    m_mesh.draw();
+}
+
+We intentionally keep the explicit:
+GPU::ScopedBinder<GPU::Shader> shaderBinder(m_shader);
+because expressive/readable code is preferred.
+
+ScopedBinder lives under:
+GraphicsCore/GPU/Utilities/ScopedBinder.h
+
+It binds in construction and unbinds in destruction, giving RAII for OpenGL state.
+
+Shader:
+- Shader owns OpenGL program handle
+- shader compilation and program linking are verified
+- Shader constructor takes std::string_view vertexSource and fragmentSource
+- copy deleted
+- move supported
+- handle() was considered unnecessary because it was not used outside Shader; we decided it can be made private or removed and added later if actually needed.
+- Shader compilation was initially failing because shader files accidentally contained the literal line:
+  </> glsl
+  at the beginning.
+  This caused:
+  ERROR: 0:1: '<' : syntax error
+  After removing it, shader compilation succeeded.
+
+Important OpenGL context issue:
+Initially OpenGL context was accidentally 2.1:
+OpenGL Version: 2.1 Metal - 89.4
+GLSL Version: 1.20
+
+SDLSystem was modified to request:
+SDL_GL_CONTEXT_MAJOR_VERSION = 4
+SDL_GL_CONTEXT_MINOR_VERSION = 1
+SDL_GL_CONTEXT_PROFILE_MASK = SDL_GL_CONTEXT_PROFILE_CORE
+
+Current output:
+OpenGL Version: 4.1 Metal - 89.4
+GLSL Version: 4.10
+
+SDLSystem current constructor:
+
+SDLSystem::SDLSystem() {
+    util::Logger::location();
+
+    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+        throw std::runtime_error(
+            std::string("SDLSystem Init: ") + SDL_GetError()
+        );
+    }
+
+    auto setAttribute = [](SDL_GLattr attr, int value) {
+        if (SDL_GL_SetAttribute(attr, value) != 0) {
+            std::stringstream ss;
+            ss << SDL_GetError() << '\n';
+            util::Logger::logException(channel, ss.str());
+            throw std::runtime_error(ss.str());
+        }
+    };
+
+    setAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    setAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+    setAttribute(
+        SDL_GL_CONTEXT_PROFILE_MASK,
+        SDL_GL_CONTEXT_PROFILE_CORE
+    );
+
+    util::Logger::logInfo(channel, "SDL initialization succeeded");
+}
+
+Shaders now compile and program links successfully.
+
+Shader sources:
+
+Vertex:
+#version 410 core
+
+layout(location = 0) in vec3 a_position;
+layout(location = 1) in vec3 a_color;
+
+out vec3 v_color;
+
+void main()
+{
+    gl_Position = vec4(a_position, 1.0);
+    v_color = a_color;
+}
+
+Fragment:
+#version 410 core
+
+in vec3 v_color;
+
+out vec4 fragColor;
+
+void main()
+{
+    fragColor = vec4(v_color, 1.0);
+}
+
+Application render loop:
+
+int Application::run() {
+    util::Logger::logInfo(channel, "Application Run Started");
+
+    while (m_bIsRunning) {
+        SDL_Event event;
+
+        while (SDL_PollEvent(&event)) {
+            switch (event.type) {
+            case SDL_QUIT:
+                m_bIsRunning = false;
+                break;
+
+            case SDL_KEYDOWN:
+                if (event.key.keysym.sym == SDLK_ESCAPE) {
+                    m_bIsRunning = false;
+                }
+                break;
+
+            default:
+                break;
+            }
+        }
+
+        if (!m_bIsRunning) {
+            util::Logger::logInfo(channel, "Application Run Stopped");
+            break;
+        }
+
+        m_pRenderer->setClearColor(Colors::Red);
+        m_pRenderer->beginFrame();
+        m_pScene->render();
+        m_pRenderer->endFrame();
+    }
+
+    return 0;
+}
+
+Current problem that was being debugged:
+The application runs successfully, shader compiles, mesh uploads, draw() is called with indexCount = 3, but triangle was initially not visible.
+
+Important diagnostic:
+glGetIntegerv(GL_VERTEX_ARRAY_BINDING, ...)
+showed VAO = 1, but querying GL_ARRAY_BUFFER and GL_ELEMENT_ARRAY_BUFFER while VAO was bound showed:
+VAO = 1, VBO = 0, EBO = 0
+
+This was suspicious and led to investigation of VAO/VBO/EBO binding.
+
+VertexArray:
+
+void VertexArray::bind() const noexcept
+{
+    if (m_vertexArrayHandle != 0) {
+        const GLuint vaoId = static_cast<GLuint>(m_vertexArrayHandle);
+        glBindVertexArray(vaoId);
+    }
+}
+
+void VertexArray::unbind() const noexcept {
+    glBindVertexArray(0);
+}
+
+Buffer:
+
+void Buffer::bind() const noexcept
+{
+    if (m_bufferHandle != 0) {
+        const GLuint bufferId = static_cast<GLuint>(m_bufferHandle);
+        glBindBuffer(toOpenGL(m_target), bufferId);
+    }
+}
+
+void Buffer::unbind() const noexcept {
+    glBindBuffer(toOpenGL(m_target), 0);
+}
+
+VertexArray::attachVertexBuffer():
+
+- validates BufferTarget::eVertex
+- validates componentCount 1..4
+- validates VertexAttributeType != eInvalid
+- binds VAO via ScopedBinder<VertexArray>
+- binds VBO via ScopedBinder<Buffer>
+- calls glEnableVertexAttribArray()
+- calls glVertexAttribPointer()
+
+Current implementation conceptually:
+
+ScopedBinder<VertexArray> vao(*this);
+ScopedBinder<Buffer> bufferObj(buffer);
+
+for (const auto& attribute : layout.attributes()) {
+    glEnableVertexAttribArray(...);
+    glVertexAttribPointer(
+        location,
+        componentCount,
+        type,
+        normalized,
+        layout.stride(),
+        reinterpret_cast<const void*>(offset)
+    );
+}
+
+VertexArray::attachIndexBuffer() was:
+
+ScopedBinder<VertexArray> vao(*this);
+ScopedBinder<Buffer> bufferObj(buffer);
+
+This is important:
+An element/index buffer binding IS VAO state in OpenGL 3.3+ core. Therefore the EBO must be bound while the correct VAO is bound, and it must remain associated with that VAO after the function exits.
+
+Using ScopedBinder<Buffer> for the EBO means it gets unbound on scope exit, which may cause the VAO's element-buffer association to become 0 depending on OpenGL semantics/context behavior.
+
+We were discussing changing attachIndexBuffer to bind the index buffer while VAO is bound, but NOT immediately unbind the EBO. The correct pattern is essentially:
+
+ScopedBinder<VertexArray> vao(*this);
+buffer.bind();
+
+Because EBO binding belongs to VAO state. It is NOT a resource leak to leave the OpenGL EBO binding associated with the VAO. The Buffer C++ object still owns/deletes the OpenGL buffer handle normally.
+
+This distinction is important:
+- OpenGL binding state != resource ownership
+- Leaving an EBO associated with a VAO does NOT leak it
+- The Buffer destructor deletes the actual GL buffer object
+- VAO destruction deletes the VAO object
+
+However, VBO binding via GL_ARRAY_BUFFER is different: glVertexAttribPointer captures the buffer association at the time glVertexAttribPointer is called, so the VBO itself does not need to remain bound afterward.
+
+Current Mesh::draw():
+
+void Mesh::draw() const noexcept {
+    if (m_indexCount == 0) {
+        std::stringstream ss;
+        ss << "m_indexCount = " << m_indexCount << '\n';
+        util::Logger::logInfo(channel, ss.str());
+        return;
+    }
+
+    ScopedBinder<VertexArray> vao(m_vertexArray);
+
+    glDrawElements(
+        toOpenGL(m_topology),
+        static_cast<GLsizei>(m_indexCount),
+        toOpenGL(m_indexType),
+        nullptr
+    );
+}
+
+Draw logs confirmed:
+[INFO] [Mesh] Drawing: indexCount = 3
+
+Shader bind is also called successfully.
+
+CMake:
+The project has an assets directory containing shaders:
+assets/shaders/triangle.vert.glsl
+assets/shaders/triangle.frag.glsl
+
+Previously shaders had to be manually copied into build directory because runtime paths are relative:
+assets/shaders/...
+
+This was fixed by adding:
+
+add_custom_command(TARGET GraphicsSandbox POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/assets"
+            "$<TARGET_FILE_DIR:GraphicsSandbox>/assets"
+)
+
+This must come AFTER:
+add_executable(GraphicsSandbox ...)
+
+because add_custom_command(TARGET ...) requires the target to already exist.
+
+There was a typo initially:
+GraphicsSanbox
+instead of:
+GraphicsSandbox
+which caused:
+No TARGET 'GraphicsSanbox' has been created in this directory.
+
+Important behavior:
+copy_directory will copy source assets into the target's assets directory after the build, overwriting existing files with the source versions. This removes the need to manually copy shaders and ensures build assets match source assets.
+
+Current CMake source grouping was reorganized conceptually into:
+
+# ==========================================================
+# Application
+# ==========================================================
+
+src/GraphicsSandbox.cpp
+src/Application.cpp
+src/Scene.cpp
+
+# ==========================================================
+# Core / Platform
+# ==========================================================
+
+src/SDLSystem.cpp
+src/Window.cpp
+src/WindowAccess.cpp
+src/GLContext.cpp
+src/GLContextAccess.cpp
+src/Renderer.cpp
+
+# ==========================================================
+# Utilities
+# ==========================================================
+
+src/Logger.cpp
+src/FileSystem.cpp
+
+# ==========================================================
+# Geometry
+# ==========================================================
+
+src/TriangleGeometry.cpp
+
+# ==========================================================
+# GPU
+# ==========================================================
+
+src/GPU/Shader.cpp
+src/GPU/Buffer.cpp
+src/GPU/VertexArray.cpp
+src/GPU/Mesh.cpp
+
+# ==========================================================
+# GPU / OpenGL
+# ==========================================================
+
+src/GPU/OpenGL/Mappings.cpp
+
+# ==========================================================
+# GPU / Types
+# ==========================================================
+
+src/GPU/Types/EnumStrings.cpp
+
+Headers are similarly grouped separately.
+
+Current CMake POST_BUILD asset copy:
+
+add_custom_command(TARGET GraphicsSandbox POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/assets"
+            "$<TARGET_FILE_DIR:GraphicsSandbox>/assets"
+)
+
+Current runtime status:
+- SDL initializes successfully
+- Window creates successfully
+- OpenGL 4.1 Core context successfully created
+- Renderer created
+- Shader files loaded correctly
+- Vertex shader compiles
+- Fragment shader compiles
+- Program links successfully
+- VAO created
+- VBO created
+- EBO created
+- Vertex data upload: 72 bytes
+- Index data upload: 12 bytes
+- Mesh index count = 3
+- Scene render() is called
+- Shader bind() is called
+- Mesh draw() is called
+- Application exits cleanly
+
+Still being investigated:
+- Triangle visibility / actual VAO EBO/VBO state.
+- Last important observation was VAO=1, VBO=0, EBO=0 when queried during draw/debugging.
+- Need to verify attachVertexBuffer/attachIndexBuffer and ScopedBinder behavior carefully.
+- In particular, EBO binding must remain associated with the VAO; do not blindly RAII-unbind it like a normal GL_ARRAY_BUFFER binding.
+
+DO NOT REPEAT PREVIOUSLY SOLVED ISSUES:
+- Do not blame GLSL syntax; shaders compile now.
+- Do not blame OpenGL version; context is now OpenGL 4.1 / GLSL 4.10.
+- Do not blame missing shader files; CMake now copies assets automatically.
+- Do not suggest changing explicit std::span<const GPU::Vertex>{...} unless there is a new reason.
+- User prefers expressive code such as:
+  GPU::ScopedBinder<GPU::Shader> shaderBinder(m_shader);
+- User prefers not to remove is_open/local message variables just for stylistic reasons.
+- User wants precise, technically grounded explanations rather than broad redesign suggestions.
+```
+# Graphics Engine — Geometry Refactor Thread Summary
+
+## Current Architecture Direction
+
+The engine is a modern C++20 graphics engine using SDL2 + OpenGL 4.1 Core on macOS. Design priorities include RAII, strong ownership, small interfaces, composition, and a deliberately **weakly typed/flexible geometry system** rather than hard-coded C++ vertex types.
+
+## Main Decision: Geometry Refactor
+
+The current geometry is hard-coded through `TriangleGeometry`. We decided to introduce a generic `MeshData` representation:
+
+```cpp
+struct MeshData
+{
+    std::vector<std::byte> m_vertices;
+    std::vector<std::uint32_t> m_indices;
+    VertexLayout m_layout;
+};
+```
+
+`MeshData` is intentionally weakly typed: it stores raw vertex bytes, indices, and the layout describing how those bytes should be interpreted.
+
+Important conceptual distinction:
+
+* `MeshData` = CPU-side geometry payload **plus the format/interpretation contract**
+* `VertexLayout` = communication/translation layer between CPU vertex data and GPU vertex format
+* `GPU::Mesh` = actual GPU representation/resource
+* `GPU::Buffer` / `GPU::VertexArray` = underlying OpenGL resources/state
+
+Therefore, `MeshData` is not considered "pure CPU data" because `VertexLayout` describes the GPU-facing interpretation of the data.
+
+## Folder Structure Decision
+
+We decided **not** to put `Geometry` under `GPU`, because `MeshData` and procedural geometry generators are not themselves GPU resources.
+
+Target structure:
+
+```text
+include/GraphicsCore/
+├── Geometry/
+│   ├── MeshData.h
+│   ├── VertexLayout.h
+│   └── Triangle.h              // later
+│
+├── GPU/
+│   ├── Buffer.h
+│   ├── VertexArray.h
+│   ├── Mesh.h
+│   ├── Shader.h
+│   ├── VertexAttribute.h
+│   └── ...
+│
+└── Utilities/
+    ├── FileSystem.h
+    ├── Logger.h
+    └── ...
+```
+
+`VertexLayout` was moved from `GraphicsCore::GPU` to `GraphicsCore::Geometry`.
+
+Its namespace is now:
+
+```cpp
+namespace GraphicsCore::Geometry
+```
+
+`MeshData` is also in:
+
+```cpp
+namespace GraphicsCore::Geometry
+```
+
+## VertexLayout
+
+Current `VertexLayout` remains a class because it maintains state/invariants, particularly `m_stride` corresponding to its attributes.
+
+Current conceptual implementation:
+
+```cpp
+class VertexLayout
+{
+public:
+    VertexLayout() = default;
+    ~VertexLayout() noexcept = default;
+    VertexLayout(const VertexLayout& rhs) = default;
+    VertexLayout& operator=(const VertexLayout& rhs) = default;
+    VertexLayout(VertexLayout&& rhs) = default;
+    VertexLayout& operator=(VertexLayout&& rhs) = default;
+
+    template<typename... Args>
+        requires(std::constructible_from<GPU::VertexAttribute, Args...>)
+    void addAttribute(Args&&... args)
+    {
+        m_attributes.emplace_back(std::forward<Args>(args)...);
+        const GPU::VertexAttribute& attribute = m_attributes.back();
+        m_stride += attribute.componentCount() * sizeOf(attribute.type());
+    }
+
+    [[nodiscard]]
+    constexpr std::size_t stride() const noexcept {
+        return m_stride;
+    }
+
+    [[nodiscard]]
+    constexpr std::span<const GPU::VertexAttribute> attributes() const noexcept {
+        return m_attributes;
+    }
+
+    void clear() noexcept {
+        m_attributes.clear();
+        m_stride = 0;
+    }
+
+private:
+    std::vector<GPU::VertexAttribute> m_attributes{};
+    std::size_t m_stride{};
+};
+```
+
+It currently still uses `GPU::VertexAttribute` and `GPU` utilities. This is acceptable for now because `VertexLayout` is intentionally the communication/translation layer.
+
+## MeshData
+
+`MeshData` should remain a **struct**, not a class.
+
+Reason: it is currently a passive data-transfer/aggregate type without invariants requiring encapsulation. `VertexLayout`, by contrast, has internal state and behavior and therefore remains a class.
+
+Recommended header:
+
+```cpp
+#pragma once
+
+#include <cstddef>
+#include <cstdint>
+#include <vector>
+
+#include "GraphicsCore/Geometry/VertexLayout.h"
+
+namespace GraphicsCore::Geometry {
+
+struct MeshData
+{
+    std::vector<std::byte> m_vertices;
+    std::vector<std::uint32_t> m_indices;
+    VertexLayout m_layout;
+};
+
+} // namespace GraphicsCore::Geometry
+```
+
+Important: explicitly include `<cstdint>` because `std::uint32_t` is used. `<cstddef>` is needed for `std::byte`.
+
+`MeshData.cpp` is **not needed** unless non-trivial out-of-line member functions are added later. For now it should be header-only.
+
+## CMake Changes Already Made
+
+CMake now includes:
+
+```cmake
+src/Geometry/MeshData.cpp
+```
+
+and:
+
+```cmake
+include/GraphicsCore/Geometry/VertexLayout.h
+include/GraphicsCore/Geometry/MeshData.h
+include/Geometry/TriangleGeometry.h
+```
+
+However, since `MeshData` currently has no implementation, `src/Geometry/MeshData.cpp` should likely be removed rather than created.
+
+Also note that `TriangleGeometry` currently lives under:
+
+```text
+include/Geometry/TriangleGeometry.h
+src/TriangleGeometry.cpp
+```
+
+This is temporary legacy structure. Eventually it should become a geometry generator such as:
+
+```text
+GraphicsCore/Geometry/Triangle.h
+```
+
+which produces `Geometry::MeshData`.
+
+## Immediate Next Step
+
+The next planned change is:
+
+**Modify `GPU::Mesh` so its constructor consumes a single `Geometry::MeshData` parameter.**
+
+Conceptually:
+
+```cpp
+GPU::Mesh mesh{meshData};
+```
+
+instead of passing vertices, indices, and layout separately.
+
+The desired pipeline is:
+
+```text
+Geometry generator
+      ↓
+  MeshData
+      ↓
+   GPU::Mesh
+      ↓
+Buffer + VertexArray
+      ↓
+    OpenGL
+```
+
+Do **not** create `Triangle.h` yet. First make the existing triangle work through the new `MeshData → GPU::Mesh` path. Once that compiles and renders correctly, replace the old hard-coded `TriangleGeometry` with a proper `Geometry::Triangle` generator.
+
+## Important Architectural Principle
+
+Keep the distinction:
+
+```text
+Geometry
+    = data + description of data
+
+GPU
+    = actual GPU resources and OpenGL state
+```
+
+Do not introduce an OBJ/glTF/model loader yet. First establish the clean `MeshData → GPU::Mesh` boundary. Then procedural geometry (`Triangle`, `Cube`, etc.) can all produce the same `MeshData`, and asset loading can be introduced later without changing `GPU::Mesh`.
+
+# GraphicsSandbox — Current Project Status
+
+**Last consolidated:** 21 August 2026
+**Project:** GraphicsSandbox — C++ Graphics Engine
+**Purpose of this document:** Canonical project state. Older GraphicsSandbox discussion threads can be deleted after this is saved.
+
+---
+
+## 1. Project Direction
+
+GraphicsSandbox is being developed as a **small, modern C++ graphics engine**, rather than simply as a rendering demo.
+
+The goal is to use the project to build a strong understanding of:
+
+* modern C++
+* engine architecture
+* CPU-side data representation
+* GPU resource representation
+* CPU ↔ GPU translation
+* graphics API abstractions
+* memory/resource ownership
+* geometry representation
+* rendering architecture
+* eventually CUDA/GPU-compute concepts
+
+The architecture should remain reasonably flexible rather than becoming tightly coupled to one specific rendering implementation too early.
+
+A major design principle so far is:
+
+> **Do not prematurely over-engineer the engine, but make the boundaries between concepts explicit.**
+
+---
+
+# 2. Current High-Level Architecture
+
+The project is being separated conceptually into layers.
+
+At the current stage, the important distinction is:
+
+```text
+GraphicsSandbox
+    |
+    | application / scene / rendering usage
+    v
+GraphicsCore
+    |
+    +-- Geometry
+    |     +-- Vertex
+    |     +-- MeshData
+    |     +-- VertexLayout
+    |     +-- Triangle
+    |
+    +-- GPU
+          +-- GPU-specific representations/resources
+```
+
+The exact directory structure is still being refined, but the important architectural boundary is:
+
+### Geometry
+
+Represents geometry as an engine-level concept.
+
+### GPU
+
+Represents how that geometry is eventually communicated to and represented by the graphics API/GPU.
+
+### GraphicsSandbox
+
+Uses the engine rather than defining engine-level geometry itself.
+
+---
+
+# 3. Geometry Refactoring
+
+The project originally had geometry hard-coded directly in the rendering/application side.
+
+The current direction is to move that into reusable engine-side geometry types.
+
+The conceptual transition is:
+
+```text
+OLD
+
+GraphicsSandbox
+    |
+    +-- hard-coded triangle vertices
+    +-- hard-coded indices
+    +-- rendering setup
+```
+
+toward:
+
+```text
+GraphicsSandbox
+    |
+    +-- asks GraphicsCore for Triangle
+              |
+              v
+        MeshData
+              |
+              v
+        GPU upload / rendering
+```
+
+The important consequence is that a triangle should become an **engine geometry object/data provider**, rather than simply a collection of OpenGL calls hidden behind another class.
+
+---
+
+# 4. MeshData
+
+The current CPU-side geometry container is conceptually:
+
+```cpp
+struct MeshData
+{
+    std::vector<std::byte> vertices;
+    std::vector<std::uint32_t> indices;
+    VertexLayout layout;
+};
+```
+
+The project direction changed from a fixed/static representation toward a **vector-based representation**.
+
+This is intentional because MeshData should eventually be able to represent arbitrary meshes rather than only a triangle with a fixed number of vertices.
+
+The important pieces are:
+
+```text
+MeshData
+ ├── vertex byte data
+ ├── index data
+ └── description of vertex layout
+```
+
+The underlying vector representation is also being treated as a deliberate part of the design rather than using fixed-size arrays everywhere.
+
+---
+
+# 5. Why std::byte for Vertices?
+
+The engine is deliberately moving toward a relatively weakly typed/raw representation for generic mesh data.
+
+Instead of:
+
+```cpp
+std::vector<Vertex>
+```
+
+the current direction is:
+
+```cpp
+std::vector<std::byte>
+```
+
+This allows MeshData to represent different vertex formats.
+
+For example, eventually:
+
+```text
+Position
+Position + Color
+Position + Normal
+Position + Normal + UV
+Position + Normal + Tangent + UV
+...
+```
+
+without making MeshData itself dependent on one concrete C++ vertex struct.
+
+This fits the desired engine philosophy:
+
+> MeshData should describe arbitrary GPU-oriented vertex data rather than impose one universal vertex type.
+
+---
+
+# 6. Vertex
+
+A `Vertex` type still exists and is useful for defining/conveniently constructing particular vertex formats.
+
+The current project has been working with something along the lines of:
+
+```cpp
+Vertex
+{
+    m_position
+    m_color
+    ...
+}
+```
+
+The important distinction is:
+
+```text
+Vertex
+    = concrete/convenient vertex representation
+
+MeshData
+    = generic mesh representation
+```
+
+Therefore MeshData should not necessarily be permanently tied to `Vertex`.
+
+`Vertex` can be used when constructing specific geometry such as a triangle, while MeshData remains generic.
+
+---
+
+# 7. VertexLayout
+
+`VertexLayout` describes how the bytes in MeshData's vertex buffer should be interpreted.
+
+Conceptually:
+
+```text
+MeshData.vertices
+        |
+        | raw bytes
+        v
+VertexLayout
+        |
+        | tells GPU/renderer how to interpret them
+        v
+GPU vertex attributes
+```
+
+This is an important architectural boundary.
+
+There was discussion about whether putting `VertexLayout` directly into `MeshData` makes MeshData no longer "pure CPU-side data."
+
+The current conclusion is effectively:
+
+> `VertexLayout` is a useful **translation/description layer between generic CPU geometry data and GPU vertex representation**.
+
+That is acceptable and intentional.
+
+The layout does not mean MeshData itself becomes an OpenGL object.
+
+---
+
+# 8. Geometry Folder
+
+The current proposed organization is to have a dedicated Geometry area under GraphicsCore.
+
+Conceptually:
+
+```text
+GraphicsCore/
+    Geometry/
+        VertexLayout.h
+        MeshData.h
+        Triangle.h
+        Vertex.h
+```
+
+The exact final path/name can still be adjusted, but the important idea is that these concepts belong together.
+
+The previous discussion specifically considered whether MeshData belongs under:
+
+```text
+GraphicsCore/Geometry/
+```
+
+versus:
+
+```text
+GraphicsCore/GPU/Geometry/
+```
+
+The preferred direction is to keep **MeshData/Vertex/VertexLayout/Triangle as engine Geometry concepts**, rather than hiding them under a GPU implementation folder.
+
+GPU-specific objects should live on the GPU side.
+
+---
+
+# 9. Triangle
+
+The current design is moving toward a `Triangle` geometry type.
+
+Conceptually:
+
+```cpp
+class Triangle
+{
+public:
+    [[nodiscard]]
+    static MeshData create();
+
+private:
+    ...
+};
+```
+
+The idea is that:
+
+```cpp
+Triangle::create()
+```
+
+returns a `MeshData` describing the triangle.
+
+This is preferable to making `Triangle` itself a GPU object.
+
+So:
+
+```text
+Triangle
+   |
+   | creates/describes
+   v
+MeshData
+   |
+   | uploaded/translated
+   v
+GPU resources
+```
+
+rather than:
+
+```text
+Triangle
+   |
+   +-- creates OpenGL buffers
+   +-- binds VAO
+   +-- uploads data
+   +-- knows renderer state
+```
+
+The latter would couple Geometry directly to the graphics API, which we want to avoid.
+
+---
+
+# 10. Triangle vs TriangleGeometry
+
+There was an explicit discussion around the old/application-side concept:
+
+```text
+TriangleGeometry
+```
+
+and whether it is effectively becoming:
+
+```text
+Triangle
+```
+
+The current conceptual answer is:
+
+**Yes, but with an architectural distinction.**
+
+The old `TriangleGeometry` was more closely tied to the rendering/application layer.
+
+The new:
+
+```cpp
+GraphicsCore::Geometry::Triangle
+```
+
+should represent the **engine-level geometric definition**.
+
+It should not be responsible for OpenGL rendering.
+
+So the evolution is:
+
+```text
+Old:
+
+TriangleGeometry
+    = geometry + rendering-oriented concerns
+
+
+New:
+
+Triangle
+    = geometry definition / MeshData creation
+
+GPU layer
+    = GPU representation
+
+Renderer
+    = rendering
+```
+
+---
+
+# 11. Static Geometry Creation
+
+For simple built-in primitives such as Triangle, the current API direction is:
+
+```cpp
+Triangle::create()
+```
+
+returning:
+
+```cpp
+MeshData
+```
+
+This gives a clean separation:
+
+```text
+Primitive factory
+        ↓
+    MeshData
+        ↓
+ GPU upload/resource creation
+        ↓
+    rendering
+```
+
+The primitive does not need to know which graphics API eventually consumes it.
+
+---
+
+# 12. Current Triangle Implementation Direction
+
+The Triangle implementation has been moving toward deriving information from the actual `Vertex` definition rather than duplicating constants.
+
+For example, the current code direction included helpers such as:
+
+```cpp
+static constexpr std::size_t positionComponentCount() noexcept
+{
+    return static_cast<std::size_t>(
+        Vertex{}.m_position.size()
+    );
+}
+```
+
+This reflects a broader design principle:
+
+> Avoid duplicating information that can be derived from the actual data type.
+
+The Triangle implementation should use the vertex representation/layout to construct the appropriate MeshData rather than scattering hard-coded assumptions throughout the code.
+
+---
+
+# 13. Fixed Arrays → Vectors
+
+An important current decision is that MeshData is becoming vector-based.
+
+Earlier designs were more fixed-size/static.
+
+The current direction is:
+
+```cpp
+std::vector<std::byte>
+std::vector<std::uint32_t>
+```
+
+rather than fixed-size arrays.
+
+Reason:
+
+The engine should eventually support:
+
+* arbitrary vertex counts
+* arbitrary index counts
+* different mesh sizes
+* dynamically loaded meshes
+* generated geometry
+* potentially imported assets
+
+A triangle is simply the first use case.
+
+---
+
+# 14. "Weakly Typed" Geometry Philosophy
+
+The project intentionally leans toward a **weakly typed/generic mesh representation**.
+
+This does NOT mean the whole engine should become type-unsafe.
+
+Instead:
+
+```text
+High-level geometry
+    can be strongly typed
+
+        ↓
+
+MeshData
+    generic byte representation
+
+        ↓
+
+VertexLayout
+    describes interpretation
+
+        ↓
+
+GPU
+    consumes structured attributes
+```
+
+This gives flexibility while retaining strong typing at appropriate boundaries.
+
+The important principle is:
+
+> Strong types where they provide semantic value; generic/raw representation where the data must be flexible.
+
+---
+
+# 15. GPU Boundary
+
+One of the major architectural goals is to keep CPU-side geometry separate from actual GPU resources.
+
+For example, conceptually:
+
+```text
+CPU:
+
+Triangle
+   ↓
+MeshData
+   ↓
+VertexLayout
+
+
+GPU:
+
+MeshData
+   ↓
+GPU Buffer
+   ↓
+Vertex Array / Pipeline state
+   ↓
+Draw
+```
+
+`MeshData` should not itself own an OpenGL buffer.
+
+Likewise, `Triangle` should not know about:
+
+```cpp
+glGenBuffers(...)
+glBindBuffer(...)
+glBufferData(...)
+```
+
+Those belong in the GPU/rendering layer.
+
+---
+
+# 16. Existing GraphicsSandbox Application Structure
+
+The project already has application/rendering infrastructure along the lines of:
+
+```text
+GraphicsSandbox.cpp
+Application.cpp
+Scene.cpp
+SDLSystem.cpp
+Window.cpp
+WindowAccess.cpp
+...
+OpenGL-related implementation
+```
+
+The current refactoring is therefore **not a rewrite from zero**.
+
+We are gradually moving responsibilities out of the application/demo layer and into GraphicsCore.
+
+The intended relationship is:
+
+```text
+GraphicsSandbox
+    ↓
+Application / Scene
+    ↓
+GraphicsCore
+    ↓
+Geometry / GPU abstractions
+    ↓
+OpenGL
+```
+
+---
+
+# 17. CMake / Build Setup
+
+The project is using modern CMake.
+
+Current known configuration includes:
+
+```text
+cmake_minimum_required(VERSION 4.3.3)
+
+project(GraphicsSandbox LANGUAGES CXX)
+```
+
+Build options include:
+
+```text
+ENABLE_ASAN
+ENABLE_UBSAN
+ENABLE_WARNINGS_AS_ERRORS
+```
+
+with the current configuration having:
+
+```text
+ASAN  = ON
+UBSAN = OFF
+Warnings as errors = OFF
+```
+
+The project also has separate CMake modules for:
+
+```text
+CompilerWarnings.cmake
+CompilerOptions.cmake
+Sanitizers.cmake
+```
+
+Dependencies currently include:
+
+```text
+OpenGL
+SDL2
+```
+
+The project is therefore already structured as a proper C++ project rather than a single-file graphics experiment.
+
+---
+
+# 18. Relationship to Vector-Internals Project
+
+GraphicsSandbox and the Vector-Internals project are intentionally complementary.
+
+### Vector-Internals
+
+Focus:
+
+```text
+C++ systems programming
+    ↓
+containers
+    ↓
+allocators
+    ↓
+memory
+    ↓
+alignment
+    ↓
+object lifetime
+    ↓
+PMR
+    ↓
+performance
+```
+
+### GraphicsSandbox
+
+Focus:
+
+```text
+graphics architecture
+    ↓
+geometry
+    ↓
+CPU ↔ GPU data
+    ↓
+GPU resources
+    ↓
+rendering
+    ↓
+graphics architecture
+    ↓
+CUDA / GPU compute later
+```
+
+The two projects should reinforce each other.
+
+In particular, the Vector-Internals work will eventually make the memory/resource side of GraphicsSandbox much more meaningful.
+
+The current broader progression agreed upon is:
+
+```text
+Vector-Internals
+    Allocators
+        ↓
+    Memory
+        ↓
+    remaining C++ internals
+        ↓
+    concurrency
+        ↓
+    architecture
+        ↓
+    CUDA
+        ↓
+    parallel algorithms
+        ↓
+    profiling
+```
+
+while GraphicsSandbox continues independently as the graphics-engine implementation project.
+
+The projects should not be artificially merged; they should complement each other.
+
+---
+
+# 19. Current Status
+
+At this exact point, the GraphicsSandbox project is in the middle of a **geometry architecture refactor**.
+
+We are NOT yet at:
+
+```text
+full asset system
+full renderer
+material system
+scene graph
+advanced GPU abstraction
+```
+
+The current task is deliberately smaller:
+
+```text
+Hard-coded geometry
+        ↓
+proper Geometry abstraction
+        ↓
+MeshData
+        ↓
+VertexLayout
+        ↓
+Triangle
+        ↓
+clean CPU → GPU boundary
+```
+
+This foundation should be correct before adding more engine systems.
+
+---
+
+# 20. Immediate Next Step
+
+The immediate focus should remain on finishing the Geometry layer.
+
+Recommended order:
+
+### Step 1 — Finalize Vertex
+
+Make the concrete `Vertex` representation clean and intentional.
+
+### Step 2 — Finalize VertexLayout
+
+Define exactly how attributes are described.
+
+### Step 3 — Finalize MeshData
+
+Settle:
+
+```cpp
+std::vector<std::byte> vertices;
+std::vector<std::uint32_t> indices;
+VertexLayout layout;
+```
+
+and its ownership/value semantics.
+
+### Step 4 — Implement Triangle
+
+Have:
+
+```cpp
+Triangle::create()
+```
+
+produce valid MeshData.
+
+### Step 5 — Validate Triangle
+
+Verify:
+
+```text
+vertex byte size
+index count
+attribute offsets
+attribute component counts
+stride
+layout
+```
+
+are all coherent.
+
+### Step 6 — Only then connect to GPU
+
+Take the resulting MeshData and build the GPU-side representation.
+
+---
+
+# 21. What We Should NOT Do Yet
+
+Do not jump ahead into:
+
+* complex mesh loaders
+* ECS
+* materials
+* sophisticated render graphs
+* scene graph redesign
+* GPU memory allocators
+* generalized resource managers
+* massive renderer abstractions
+* premature template-heavy vertex systems
+
+The current goal is to get one simple primitive through a clean architecture.
+
+The triangle should become the architectural test case.
+
+If the architecture works cleanly for:
+
+```text
+Triangle → MeshData → GPU
+```
+
+then more complex geometry can follow naturally.
+
+---
+
+# 22. Current Architectural Mental Model
+
+The most important model to preserve going forward is:
+
+```text
+                 GraphicsSandbox
+                       |
+                       v
+                  Application
+                       |
+                       v
+                     Scene
+                       |
+                       v
+                GraphicsCore
+                       |
+              +--------+--------+
+              |                 |
+              v                 v
+          Geometry             GPU
+              |                 |
+        +-----+-----+           |
+        |     |     |           |
+     Vertex  Mesh  Triangle     |
+              |                  |
+              +------->----------+
+                       |
+                       v
+                 Graphics API
+                    / OpenGL
+```
+
+More specifically:
+
+```text
+Triangle
+   ↓
+MeshData
+   ↓
+VertexLayout
+   ↓
+GPU representation
+   ↓
+Render
+```
+
+Each layer should know only what it needs to know.
+
+---
+
+# 23. Design Principles Going Forward
+
+### 1. Keep ownership obvious
+
+If an object owns data, that should be clear from its type and lifetime.
+
+### 2. Separate description from resource
+
+For example:
+
+```text
+MeshData        = describes mesh data
+GPU buffer      = owns GPU resource
+```
+
+### 3. Avoid API leakage
+
+Geometry should not contain OpenGL calls.
+
+### 4. Prefer value semantics where appropriate
+
+MeshData is fundamentally data.
+
+### 5. Avoid premature abstraction
+
+Do not create generic systems until a real use case demonstrates the need.
+
+### 6. Derive information where possible
+
+Avoid duplicated constants when the information can be obtained from the actual type/layout.
+
+### 7. Keep the engine flexible
+
+MeshData should not assume that every vertex is one particular `Vertex` type.
+
+### 8. Use the triangle as the first vertical slice
+
+A simple triangle should exercise the complete architecture without requiring a large engine.
+
+---
+
+# 24. Canonical Current State
+
+If this document is loaded into a future conversation, the starting assumption should be:
+
+> GraphicsSandbox is currently refactoring from hard-coded rendering geometry into a layered Geometry → MeshData → VertexLayout → GPU architecture.
+
+The current concrete geometry work is:
+
+```text
+Vertex
+MeshData
+VertexLayout
+Triangle
+```
+
+with MeshData moving toward:
+
+```cpp
+std::vector<std::byte>
+std::vector<std::uint32_t>
+VertexLayout
+```
+
+and Triangle providing:
+
+```cpp
+Triangle::create() -> MeshData
+```
+
+The next logical work is to **finish and validate these Geometry types before expanding into more GPU/rendering systems**.
+
+---
+
+# 25. One-Sentence Project Status
+
+**GraphicsSandbox is currently building its first clean engine-level Geometry pipeline, replacing hard-coded triangle data with generic MeshData + VertexLayout + Triangle abstractions while maintaining a strict separation between CPU geometry and GPU resources.**
+
+IMPORTANT — ScopedBinder / VAO-EBO Lesson
+
+We initially used:
+
+ScopedBinder<VertexArray> vao(*this);
+ScopedBinder<Buffer> bufferObj(buffer);
+
+inside VertexArray::attachIndexBuffer().
+
+This caused the EBO association with the VAO to be cleared when
+ScopedBinder<Buffer> went out of scope.
+
+The result was that the Mesh draw call executed but nothing was rendered.
+
+We changed this to:
+
+ScopedBinder<VertexArray> vao(*this);
+buffer.bind();
+
+The EBO is intentionally left associated with the VAO.
+
+This is NOT a resource leak.
+
+OpenGL binding state and C++ resource ownership are separate concepts.
+
+The Buffer object still owns the OpenGL buffer and deletes it in its
+destructor. The VAO owns the association with the EBO as part of its
+OpenGL state.
+
+Current rule:
+
+- Use ScopedBinder when a binding should be temporary.
+- Do not blindly use ScopedBinder for bindings that are intended to
+  become persistent state of another OpenGL object.
+- In particular, EBO binding must remain associated with the VAO after
+  attachIndexBuffer() completes.
+  
