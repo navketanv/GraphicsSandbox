@@ -19,7 +19,7 @@ Application::Application()
     m_pRenderer = std::make_unique<Renderer>(*m_pWindow);
 
     try {
-        m_pScene = std::make_unique<Scene>(Geometry::GeometryFactory::createGeometry(Geometry::GeometryType::eRectangle));
+        m_pScene = std::make_unique<Scene>(Geometry::GeometryFactory::createGeometry(Geometry::GeometryType::eCube));
     } catch (const std::exception& exception) {
         util::Logger::logException(channel, exception.what());
         throw;
@@ -49,6 +49,9 @@ int Application::run() {
                     break;
                 case SDLK_2:
                     m_pScene->setGeometry(Geometry::GeometryType::eRectangle);
+                    break;
+                case SDLK_3:
+                    m_pScene->setGeometry(Geometry::GeometryType::eCube);
                     break;
                 case SDLK_ESCAPE:
                     m_bIsRunning = false;

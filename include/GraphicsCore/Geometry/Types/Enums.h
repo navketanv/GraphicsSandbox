@@ -5,7 +5,8 @@ namespace GraphicsCore::Geometry {
 enum class GeometryType
 {
     eTriangle,
-    eRectangle
+    eRectangle,
+    eCube
 };
 
 } // namespace GraphicsCore::Geometry

@@ -79,7 +79,7 @@ add_executable(GraphicsSandbox
 
     src/Geometry/Triangle.cpp
     src/Geometry/Rectangle.cpp
-
+    src/Geometry/Cube.cpp
 
     # ==========================================================
     # GPU
@@ -89,6 +89,13 @@ add_executable(GraphicsSandbox
     src/GPU/Buffer.cpp
     src/GPU/VertexArray.cpp
     src/GPU/Mesh.cpp
+
+
+    # ==========================================================
+    # Math
+    # ==========================================================
+
+    src/Math/Mat4.cpp
 
 
     # ==========================================================
@@ -136,6 +143,7 @@ add_executable(GraphicsSandbox
     include/Utilities/ScopeGuard.h
     include/Utilities/ByteViews.h
 
+
     # ==========================================================
     # GPU / Headers
     # ==========================================================
@@ -180,13 +188,22 @@ add_executable(GraphicsSandbox
     include/GraphicsCore/Geometry/Triangle.h
     include/GraphicsCore/Geometry/Vertex.h
     include/GraphicsCore/Geometry/Rectangle.h
+    include/GraphicsCore/Geometry/Cube.h
     include/GraphicsCore/Geometry/GeometryFactory.h
+
 
     # ==========================================================
     # Geometry / Types
     # ==========================================================
 
     include/GraphicsCore/Geometry/Types/Enums.h
+
+
+    # ==========================================================
+    # Math / Headers
+    # ==========================================================
+
+    include/GraphicsCore/Math/Mat4.h
 )
 
 target_include_directories(GraphicsSandbox
@@ -220,3 +237,10 @@ install(TARGETS GraphicsSandbox
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+# ==========================================================
+# Tests
+# ==========================================================
+
+enable_testing()
+add_subdirectory(tests)
