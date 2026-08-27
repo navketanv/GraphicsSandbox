@@ -204,6 +204,8 @@ add_executable(GraphicsSandbox
     # ==========================================================
 
     include/GraphicsCore/Math/Mat4.h
+    include/GraphicsCore/Math/Vec4.h
+    include/GraphicsCore/Math/Vec3.h
 )
 
 target_include_directories(GraphicsSandbox
